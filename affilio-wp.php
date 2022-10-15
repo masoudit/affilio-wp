@@ -14,7 +14,9 @@ if (!defined('ABSPATH')) {
 }
 require __DIR__ . '/config.php';
 require __DIR__ . '/client.php';
+require __DIR__ . '/order.php';
 // define('WEB_STORE_ID', 5175616687319568587);
+define('AFI_LAST_ORDER', 'AFI_LAST_ORDER' );
 define('AFF_ID', "NzdhZGFiZTAtZGQxMC00YTA2LTgzNDItNTY0NzM0YTFkOThk");
 
 /**
@@ -22,98 +24,15 @@ define('AFF_ID', "NzdhZGFiZTAtZGQxMC00YTA2LTgzNDItNTY0NzM0YTFkOThk");
  * ACTIONS AFFILIO PLUGIN
  * 
  */
-function call_after_order_update()
-{
-}
 
-function call_after_order_cancel($order_id)
-{
-    log_me('This is a message for debugging purposes');
-    log_me(array("This is a message" => 'xx', 'orderId' => $order_id));
-
-    $body = array(array(
-        "order_id" => $order_id,
-        "basket_id" => "string",
-        "web_store_code" => WEB_STORE_ID
-    ));
-
-    $params = array(
-        'body'    => wp_json_encode($body),
-        // 'timeout' => 60,
-        'headers' => array(
-            'Content-Type' => 'application/json;charset=' . get_bloginfo('charset'),
-        ),
-    );
-    $response = wp_safe_remote_post(esc_url_raw(SYNC_ORDER_CANCEL_API), $params);
-
-    if (is_wp_error($response)) {
-        return $response;
-    } elseif (empty($response['body'])) {
-        return new WP_Error('AFFILIO-api', 'Empty Response');
-    }
-    parse_str($response['body'], $response_);
-}
-add_action('woocommerce_order_status_cancelled', 'call_after_order_cancel');
-// add_action( 'woocommerce_order_status_processing', 'call_after_order_cancel' );
-// add_action( 'woocommerce_order_status_changed', 'call_after_order_cancel');
-
-function call_after_new_customer_insert($user_id)
-{
-    log_me('This is a message for debugging purposes');
-    log_me(array("This is a message" => 'xx', 'user_id' => $user_id));
-
-    $body = array(array(
-        "user_id" => $user_id,
-        "web_store_code" => WEB_STORE_ID,
-        "affiliate_id" => AFF_ID
-    ));
-
-    $params = array(
-        'body'    => wp_json_encode($body),
-        // 'timeout' => 60,
-        'headers' => array(
-            'Content-Type' => 'application/json;charset=' . get_bloginfo('charset'),
-        ),
-    );
-    $response = wp_safe_remote_post(esc_url_raw(SYNC_ORDER_CANCEL_API), $params);
-
-    if (is_wp_error($response)) {
-        return $response;
-    } elseif (empty($response['body'])) {
-        return new WP_Error('AFFILIO-api', 'Empty Response');
-    }
-    parse_str($response['body'], $response_);
-}
-add_action('woocommerce_order_status_cancelled', 'call_after_order_cancel');
-add_action('user_register', 'call_after_new_customer_insert');
-
-function auth_login()
-{
-    $body = array(
-        'user_name' => "09360004748",
-        'password' => "09360004748",
-        'remember_me' => true,
-    );
-
-    $params = array(
-        'body'    => wp_json_encode($body),
-        // 'timeout' => 60,
-        'headers' => array(
-            'Content-Type' => 'application/json;charset=' . get_bloginfo('charset'),
-        ),
-    );
-    $response = wp_safe_remote_post(esc_url_raw(AUTH_LOGIN), $params);
-    echo "<div style='direction:ltr'><pre>";
-    // parse_str($response['body'], $response_);
-    // var_dump(json_decode($response['body'])->data);
-    $GLOBALS['bearer'] = json_decode($response['body'])->data;
-    // var_dump(esc_url_raw(AUTH_LOGIN));
-    echo "</pre></div>";
-}
-
+// add_action('user_register', 'call_after_new_customer_insert');
+// function call_after_new_customer_insert($user_id)
+// {
+//     var_dump('cccccc');
+//     log_me('This is a message 2222 for debugging purposes user_id');
+// }
 function init_set_cookie()
 {
-    // auth_login();
     // https://salam.com/?utm_source=https%253A%252F%252Ftakhfifan.com&utm_medium=Affilio&utm_campaign=ohgv&utm_content=&affid=NzdhZGFiZTAtZGQxMC00YTA2LTgzNDItNTY0NzM0YTFkOThk&exp=2
     // $b64 = 'aHR0cHM6Ly93d3cuZGlnaWthbGEuY29tL3NlYXJjaC9jYXRlZ29yeS1ncmFwaGljcy1jYXJkLz9wcmljZVttaW5dPTEwMDAwMDAwMCZwcmljZVttYXhdPTE4MDAwMDAwMA==';
     // $extraParam = 'ehdiw';
@@ -149,256 +68,6 @@ add_action('init', 'init_set_cookie');
 
 /**
  * 
- * SETUP AFFILIO PLUGIN
- * 
- */
-
-function call_after_post_publish($post)
-{
-    // Code to be run after publishing the post
-}
-// add_action('wp_after_insert_post', 'call_after_post_publish', 10, 2);
-// add_action('publish_post', 'call_after_post_publish', 10, 2);
-
-function init_categories()
-{
-    // auth_login();
-    global $wpdb;
-    // Prepare Database
-    // $table = $wpdb->prefix . "options";
-    $table = $wpdb->options;
-
-    $afi_sent_cats_name = 'afi_sent_cats';
-    $results = $wpdb->get_results("SELECT * FROM {$table} WHERE option_name = '{$afi_sent_cats_name}'", OBJECT);
-
-    $is_exists = count($results) > 0;
-    $option_id = 0;
-    if (!$is_exists) {
-        $data = array('option_name' => 'afi_sent_cats', 'option_value' => 0);
-        $format = array('%s', '%s');
-        $wpdb->insert($table, $data, $format);
-        $option_id = $wpdb->insert_id;
-    } else {
-        $option_id = $results[0]->option_id;
-        $option = $results[0]->option_name;
-
-        $data = array('option_value' => 126);
-        $where = array('option_name' => $option);
-        $result = $wpdb->update($wpdb->options, $data, $where);
-        // if ( ! $result ) {
-        //     return false;
-        // }
-    }
-    $categories = get_categories(
-        array(
-            'taxonomy'   => 'product_cat',
-            'hide_empty' => false,
-        )
-    );
-
-    $body = [];
-    foreach ($categories as $cat) {
-        $val = array(
-            'web_store_id' => WEB_STORE_ID,
-            'title' => $cat->cat_name,
-            'category_id' => $cat->cat_ID,
-            'parent_category_id' => $cat->category_parent,
-            'is_active' => true,
-            'is_deleted' => false,
-        );
-
-        array_push($body, $val);
-    }
-
-    $params = array(
-        'body'    => json_encode($body),
-        // 'timeout' => 60,
-        'headers' => array(
-            'Content-Type' => 'application/json;charset=' . get_bloginfo('charset'),
-            'Authorization'=> 'Bearer ' . $GLOBALS['bearer'],
-        ),
-    );
-
-    $response = wp_safe_remote_post(esc_url_raw(SYNC_CATEGORY_API), $params);
-    // get all categories of woo-commerce
-    echo "<div style='direction:ltr'><pre>";
-    echo esc_url_raw(SYNC_CATEGORY_API);
-    print_r(json_encode($body, JSON_PRETTY_PRINT));
-    // var_dump(wp_json_encode($body));
-    print_r($response);
-    echo "</pre></div>";
-
-    if (is_wp_error($response)) {
-        return $response;
-    } elseif (empty($response['body'])) {
-        return new WP_Error('AFFILIO-api', 'Empty Response');
-    }
-    parse_str($response['body'], $response_);
-}
-// add_action('init', 'init_categories');
-
-function init_products()
-{
-    // echo 'init_products Fired on the WordPress initialization';
-    $args = array(
-        'post_type'      => 'product',
-        // 'posts_per_page' => 10,
-        // 'product_cat'    => 'hoodies'
-    );
-
-    $loop = new WP_Query($args);
-    $body = [];
-    foreach ($loop->posts as $post) :
-        $product = wc_get_product($post->ID);
-        // echo "<div style='direction:ltr'><pre>";
-        // var_dump($product);
-        // echo "</pre></div>";
-        $image = wp_get_attachment_image_src(get_post_thumbnail_id($post->ID), 'single-post-thumbnail');
-
-        $val = array(
-            'id' => $product->id,
-            'title' => $product->name,
-            'web_store_id' => WEB_STORE_ID,
-            'category_id' => end($product->category_ids),
-            'landing' => "",
-            'description' => $product->description,
-            'image' => reset($image),
-            'alt_image' => "",
-            'discount' => $product->regular_price - $product->price,
-            'price' => $product->price,
-            'code' => $product->sku,
-            'is_incredible' => "",
-            'is_promotion' => "",
-            'is_available' => $post->post_status === 'publish',
-            'product_score' => "",
-            'price_tag' => $product->tag_ids,
-        );
-        array_push($body, $val);
-    endforeach;
-    // echo json_encode($val);
-
-    // echo "<div style='direction:ltr'><pre>";
-    // // print_r($body);
-    // echo "</pre></div>";
-
-    $params = array(
-        'body'    => json_encode($body),
-        // 'timeout' => 60,
-        'headers' => array(
-            'Content-Type' => 'application/json;charset=' . get_bloginfo('charset'),
-            'Authorization'=> 'Bearer ' . $GLOBALS['bearer'],
-        ),
-    );
-    $response = wp_safe_remote_post(esc_url_raw(SYNC_PRODUCT_API), $params);
-    // get all categories of woo-commerce
-    echo "<div style='direction:ltr'><pre>";
-    print_r($params);
-    print_r($response);
-    echo "</pre></div>";
-    if (is_wp_error($response)) {
-        return $response;
-    } elseif (empty($response['body'])) {
-        return new WP_Error('AFFILIO-api', 'Empty Response');
-    }
-    parse_str($response['body'], $response_);
-}
-// add_action('init', 'init_products');
-
-function init_orders()
-{
-    // echo 'init_orders Fired on the WordPress initialization';
-    $args = array(
-        'post_type' => 'shop_order',
-        //    'posts_per_page' => '-1'
-    );
-    // $loop = new WP_Query($args);
-    $orders = wc_get_orders(
-        array(
-            // 'limit'    => 1,
-            // 'status'   => array_map( 'wc_get_order_status_name', wc_get_is_paid_statuses() ),
-            // 'customer' => $user->ID,
-        )
-    );
-
-    $body = [];
-    foreach ($orders as $order) :
-        // echo "<div style='direction:ltr'><pre>";
-        // print_r(gettype($order));
-        // print_r($order);
-        // echo($order->date_created);
-        // echo "</pre></div>";
-
-        $orderItems = [];
-        foreach ($order->posts as $orderItem) :
-            array_push($orderItems, $orderItem);
-        endforeach;
-        
-        // var_dump($order->date_created);
-        // return;
-        // echo "<br/>";
-
-        $val = array(
-            'basket_id' => $order->order_key,
-            'order_id' => $order->id,
-            'web_store_id' => WEB_STORE_ID,
-            'affiliate_id' => AFF_ID,
-            'is_new_customer' => '',
-            // 'order_status' => $order->status,
-            'order_status' => 1,
-            'shipping_cost' => '',
-            'discount' => '',
-            'order_amount' => $order->total,
-            'source' => '',
-            'created_at' => "2022-10-12 07:40:41.000000",
-            'close_source' => '',
-            'state' => $order->status,
-            'city' => $order->billing->city,
-            'user_id' => $order->customer_id,
-            'voucher_code' => '',
-            'voucher_type' => '',
-            'voucher_price' => $order->discount_total,
-            'vat_price' => $order->total_tax,
-            'voucher_percent' => '',
-            // 'update_date' => $order->date_modified->date,
-            'update_date' => "2022-10-12 07:40:41.000000",
-            // 'delivery_date' => $order->date_completed->date,
-            'delivery_date' => "2022-10-12 07:40:41.000000",
-            'voucher_used_amount' => '',
-            'order_items' => $orderItems
-        );
-        array_push($body, $val);
-    endforeach;
-
-    // echo "<div style='direction:ltr'><pre>";
-    // print_r($body);
-    // echo "</pre></div>";
-
-    $params = array(
-        'body'    => json_encode($body),
-        // 'timeout' => 60,
-        'headers' => array(
-            'Content-Type' => 'application/json;charset=' . get_bloginfo('charset'),
-            'Authorization'=> 'Bearer ' . $GLOBALS['bearer'],
-        ),
-    );
-    $response = wp_safe_remote_post(esc_url_raw(SYNC_ORDER_API), $params);
-    // get all categories of woo-commerce
-    echo "<div style='direction:ltr'><pre>";
-    print_r($params);
-    print_r($response);
-    echo "</pre></div>";
-    if (is_wp_error($response)) {
-        return $response;
-    } elseif (empty($response['body'])) {
-        return new WP_Error('AFFILIO-api', 'Empty Response');
-    }
-    parse_str($response['body'], $response_);
-}
-// add_action('init', 'init_orders');
-
-
-/**
- * 
  * HELPERS
  * 
  */
@@ -421,8 +90,78 @@ function add_script_style() {
     // wp_enqueue_style('afi-css-file', plugin_dir_url(__FILE__) . '/assets/style.css', array(), time(), 'all');
     // wp_enqueue_style( 'my-style', plugins_url( '/css/my-style.css', __FILE__ ), false, '1.0', 'all' ); // Inside a plugin
     // wp_enqueue_style('x'); // Inside a plugin
-
 }
+
+
+function wp_encrypt($stringToHandle = "", $encryptDecrypt = 'e') {
+    return eval(base64_decode("ZGVmaW5lKCdBRklfS0VZJywgJ25mOGdmOGFeMypzJyk7DQoJCWRlZmluZSgnQUZJX0lWJywgJ3MmJjkiZGE0JTpAJyk7DQoJCSRvdXRwdXQgPSBudWxsOw0KCQkvLyBTZXQgc2VjcmV0IGtleXMNCgkJJHNlY3JldF9rZXkgPSBBRklfS0VZOyANCgkJJHNlY3JldF9pdiA9IEFGSV9JVjsNCgkJJGtleSA9IGhhc2goJ3NoYTI1NicsJHNlY3JldF9rZXkpOw0KCQkkaXYgPSBzdWJzdHIoaGFzaCgnc2hhMjU2Jywkc2VjcmV0X2l2KSwwLDE2KTsNCgkJLy8gQ2hlY2sgd2hldGhlciBlbmNyeXB0aW9uIG9yIGRlY3J5cHRpb24NCgkJaWYoJGVuY3J5cHREZWNyeXB0ID09ICdlJyl7DQoJCSAgIC8vIFdlIGFyZSBlbmNyeXB0aW5nDQoJCSAgICRvdXRwdXQgPSBiYXNlNjRfZW5jb2RlKG9wZW5zc2xfZW5jcnlwdCgkc3RyaW5nVG9IYW5kbGUsIkFFUy0yNTYtQ0JDIiwka2V5LDAsJGl2KSk7DQoJCX1lbHNlIGlmKCRlbmNyeXB0RGVjcnlwdCA9PSAnZCcpew0KCQkgICAvLyBXZSBhcmUgZGVjcnlwdGluZw0KCQkgICAkb3V0cHV0ID0gb3BlbnNzbF9kZWNyeXB0KGJhc2U2NF9kZWNvZGUoJHN0cmluZ1RvSGFuZGxlKSwiQUVTLTI1Ni1DQkMiLCRrZXksMCwkaXYpOw0KCQl9DQoJCS8vIFJldHVybiB0aGUgZmluYWwgdmFsdWUNCgkJcmV0dXJuICRvdXRwdXQ7"));
+}
+
+// add_filter( 'cron_schedules', 'isa_add_every_three_minutes' );
+// function isa_add_every_three_minutes( $schedules ) {
+//     $schedules['every_three_minutes'] = array(
+//             'interval'  => 10,
+//             'display'   => __( 'Every 3 Minutes', 'textdomain' )
+//     );
+//     return $schedules;
+// }
+
+// add_filter( 'cron_schedules', 'wpshout_add_cron_interval' );
+// function wpshout_add_cron_interval( $schedules ) {
+//     $schedules['everyminute'] = array(
+//             'interval'  => 5, // time in seconds
+//             'display'   => 'Every Minute'
+//     );
+//     return $schedules;
+// }
+
+
+// Schedule an action if it's not already scheduled
+// if ( ! wp_next_scheduled( 'wpshout_add_cron_interval' ) ) {
+//     // wp_schedule_event( time(), 'every_three_minutes', 'isa_add_every_three_minutes' );
+//     wp_schedule_event( time(), 'minutes', 'wpshout_do_thing' );
+// }
+
+// Hook into that action that'll fire every three minutes
+// add_action( 'wpshout_do_thing', 'every_three_minutes_event_func' );
+// function every_three_minutes_event_func() {
+//     // do something
+//     auth_login();
+// }
+
+add_action( 'wp', 'custom_cron_job' );
+function custom_cron_job() {
+   if ( ! wp_next_scheduled( 'send_email_two_hours' ) ) {
+      wp_schedule_event( time(), 'hoursly', 'auth_login' );
+    //   wp_schedule_event( time(), 'minutes' ,'auth_login' );
+   }
+}
+
+// log_me('cron-------');
+add_action('auth_login', 'auth_login_');
+function auth_login_() {
+    log_me('cron-------');
+    //here you can build logic and email to all users	
+    //send email to adminhttps://assets.grammarly.com/emoji/v1/1f610.svg
+    // if(is_admin()){
+    $resultLogin = new MainClass();
+    $affilio_options = get_option( 'affilio_option_name' );
+    $username = $affilio_options['username']; // username
+    // log_me('cron-------'. $username);
+
+    $password = $affilio_options['password']; // password
+    // var_dump($username);
+    $resultLogin->auth_login($username, wp_encrypt($password, 'd'));
+    // }
+}
+
+function set_option ($name, $value) { 
+    $isAdded = add_option($name, $value);
+    if(!$isAdded){
+        $isAdded = update_option($name, $value);
+    }
+}
+
 if ( is_admin() ){
     // add_action('wp_head', 'add_script_style');
     add_script_style();

@@ -32,7 +32,13 @@ class MainClass
             if (!$result->errors) {
                 if (strlen($result) > 150) {
                     $GLOBALS['bearer'] = $result;
+                    add_option("affilio_connected", true);
+                    add_option("affilio_token", $result);
+                    update_option("affilio_connected", true);
+                    update_option("affilio_token", $result);
                     return $result;
+                }else {
+                    update_option("affilio_connected", false);
                 }
             }
             // return "error";
@@ -43,7 +49,7 @@ class MainClass
             $msg = '<div id="message" class="error notice is-dismissible"><p>' . $result . '</p></div>';
             echo $msg;
         } else {
-            $msg = '<div id="message" class="error notice is-dismissible"><p>Not Valid Info</p></div>';
+            $msg = '<div id="message" class="error notice is-dismissible"><p>اطلاعات نامعتبر است</p></div>';
             echo $msg;
         }
         // echo "<div style='direction:ltr'><pre>";
@@ -58,8 +64,6 @@ class MainClass
     function init_categories()
     {
         // auth_login();
-        
-
         global $wpdb;
         // Prepare Database
         // $table = $wpdb->prefix . "options";
@@ -118,19 +122,29 @@ class MainClass
 
         $response = wp_safe_remote_post(esc_url_raw(SYNC_CATEGORY_API), $params);
         // get all categories of woo-commerce
-        echo "<div style='direction:ltr'><pre>";
+        // echo "<div style='direction:ltr'><pre>";
         // echo esc_url_raw(SYNC_CATEGORY_API);
         // print_r(json_encode($body, JSON_PRETTY_PRINT));
         // // var_dump(wp_json_encode($body));
-        print_r($response);
-        echo "</pre></div>";
+        // print_r($a);
+        // parse_str($response['body'], $response_);
+        // print_r(json_encode);
+        // print_r($response->body->success);
+        // echo "</pre></div>";
 
         if (is_wp_error($response)) {
+            $msg = '<div id="message" class="error notice is-dismissible"><p>خطای همگام سازی دسته بندی ها، لطفا مجددا تلاشی نمایید</p></div>';
+            echo $msg;
             return $response;
         } elseif (empty($response['body'])) {
+            $msg = '<div id="message" class="error notice is-dismissible"><p>خطای همگام سازی دسته بندی ها، لطفا مجددا تلاش نمایید</p></div>';
+            echo $msg;
             return new WP_Error('AFFILIO-api', 'Empty Response');
         }
-        parse_str($response['body'], $response_);
+        $isSuccess = json_decode($response['body'])->success;
+        if($isSuccess){
+            return true;
+        }
     }
 
     function init_products()
@@ -187,16 +201,24 @@ class MainClass
         );
         $response = wp_safe_remote_post(esc_url_raw(SYNC_PRODUCT_API), $params);
         // get all categories of woo-commerce
-        echo "<div style='direction:ltr'><pre>";
-        // print_r($params);
-        print_r($response);
-        echo "</pre></div>";
+        // echo "<div style='direction:ltr'><pre>";
+        // // print_r($params);
+        // print_r($response);
+        // echo "</pre></div>";
         if (is_wp_error($response)) {
+            $msg = '<div id="message" class="error notice is-dismissible"><p>خطای همگام سازی محصولات، لطفا مجددا تلاش نمایید</p></div>';
+            echo $msg;
             return $response;
         } elseif (empty($response['body'])) {
+            $msg = '<div id="message" class="error notice is-dismissible"><p>خطای همگام سازی محصولات، لطفا مجددا تلاش نمایید</p></div>';
+            echo $msg;
             return new WP_Error('AFFILIO-api', 'Empty Response');
         }
-        parse_str($response['body'], $response_);
+        // parse_str($response['body'], $response_);
+        $isSuccess = json_decode($response['body'])->success;
+        if($isSuccess){
+            return true;
+        }
     }
 
     function init_orders()
@@ -289,4 +311,7 @@ class MainClass
         }
         parse_str($response['body'], $response_);
     }
+
+    // function set_option_config($name, $value){
+    // }
 }

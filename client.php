@@ -19,9 +19,9 @@ class AFFILIO {
 		// wp_register_style( 'affilio-style', plugin_dir_path(AFI_PLUGIN_FILE) . 'style.css', array(), 324234);
 		// wp_enqueue_style( 'affilio-style');
 
-		$affilio_options = get_option( 'affilio_option_name' );
-		$username = $affilio_options['username'];
-		$password = $affilio_options['password'];
+		$this->affilio_options = get_option( 'affilio_option_name' );
+		$aff = $this->affilio_options;
+		$username = $aff['username'];
 		if($username){
 			$main = new MainClass();
 			// $main->auth_login($username, $password);
@@ -46,16 +46,20 @@ class AFFILIO {
 		$main = new MainClass();
 		$affilio_options = get_option( 'affilio_option_name' );
 		$username = $affilio_options['username']; // username
-		$password = $this->wp_encrypt($affilio_options['password'], 'd'); // password
+		$password = wp_encrypt($affilio_options['password'], 'd'); // password
 		$result = $main->auth_login($username, $password);
 		if($result){
 			// var_dump($GLOBALS['bearer']);
 			// echo "Sync_Loading";
-			$main->init_categories();
-			$main->init_products();
+			$result = $main->init_categories();
+			if($result === true){
+				$resultP = $main->init_products();
+				if($resultP === true){
+					$msg = '<div id="message" class="updated notice is-dismissible"><p>همگام سازی با موفقیت انجام شد</p></div>';
+					echo $msg;
+				}
+			}
 			// $main->init_orders();
-			$msg = '<div id="message" class="updated notice is-dismissible"><p>همگام سازی با موفقیت انجام شد</p></div>';
-            echo $msg;
 			// echo "Sync_Completed";
 		}
 	}
@@ -65,7 +69,7 @@ class AFFILIO {
 			$main = new MainClass();
 			$affilio_options = get_option( 'affilio_option_name' );
 			$username = $affilio_options['username']; // username
-			$password = $this->wp_encrypt($affilio_options['password'], 'd'); // password
+			$password = wp_encrypt($affilio_options['password'], 'd'); // password
 			$result = $main->auth_login($username, $password);
 			if($result){
 				$msg = '<div id="message" class="updated notice is-dismissible"><p>اتصال به پنل افیلو با موفقیت انجام شد</p></div>';
@@ -127,14 +131,16 @@ class AFFILIO {
 
 	public function affilio_create_admin_page() {
         $this->callbackForm();
-		$affilio_options = get_option( 'affilio_option_name' );
-		$username = $affilio_options['username']; // username
+		// $affilio_options = get_option( 'affilio_option_name' );
+		$username = $this->affilio_options['username']; // username
 		if(array_key_exists('sync_quick', $_POST)) {
             $this->sync_quick();
         }
         else if(array_key_exists('sync_all', $_POST)) {
             $this->sync_all();
         }
+
+		$isConnected = get_option("affilio_connected");
 		
          ?>
 		<div class="wrap">
@@ -145,7 +151,7 @@ class AFFILIO {
 				<tr>
 					<td>
 						<?php settings_errors(); ?>
-						<form method="post" action="options.php">
+						<form method="post" action="options.php" autocomplete="FALSE">
 							<?php
 								settings_fields( 'affilio_option_group' );
 								do_settings_sections( 'affilio-admin' );
@@ -156,6 +162,7 @@ class AFFILIO {
 					<td>
 						<h2>همگام سازی داده ها</h2>
 						<form method="post">
+						<?php if($isConnected): ?>
 						<div>
 							<h3>همگام سازی سریع</h3>
 							<p>در صورتی که قبلا فرایند همگام سازی دادها با پنل افیلو را انجام داده اید و اطلاعات شما 
@@ -165,6 +172,8 @@ class AFFILIO {
 							</p>
 							<button name="sync_quick" >همگام سازی اطلاعات</button>
 						</div>
+						<?php endif; ?>
+						<?php if($username): ?>
 						<div>
 							<h3>همگام سازی کامل</h3>
 							<p>
@@ -176,6 +185,7 @@ class AFFILIO {
 							<button name="sync_all">همگام سازی اطلاعات</button>
 						</div>
 						</form>
+						<?php endif; ?>
 					</td>
 				</tr>
 			</table>
@@ -228,7 +238,7 @@ class AFFILIO {
 		}
 
 		if ( isset( $input['password'] ) ) {
-			$sanitary_values['password'] = sanitize_text_field( $this->wp_encrypt($input['password'] ) );
+			$sanitary_values['password'] = sanitize_text_field( wp_encrypt($input['password'] ) );
 		}
 
 		if ( isset( $input['webstore'] ) ) {
@@ -253,13 +263,13 @@ class AFFILIO {
 	}
 
 	public function password_callback() {
-		// printf(
-		// 	'<input class="regular-text" type="text" name="affilio_option_name[password]" id="password" value="%s">',
-		// 	isset( $this->affilio_options['password'] ) ? esc_attr( $this->affilio_options['password']) : ''
-		// );
-        printf(
-			'<input class="regular-text" type="password" name="affilio_option_name[password]" id="password">'
+		printf(
+			'<input class="regular-text" type="password" name="affilio_option_name[password]" id="password" value="%s">',
+			isset( $this->affilio_options['password'] ) ? '***' : '***'
 		);
+        // printf(
+		// 	'<input class="regular-text" type="password" name="affilio_option_name[password]" id="password">'
+		// );
 	}
 
 	public function webstore_callback() {
@@ -270,10 +280,6 @@ class AFFILIO {
 	}
 
 	/* These need to go in your custom plugin (or existing plugin) */
-	private function wp_encrypt($stringToHandle = "", $encryptDecrypt = 'e') {
-		// // Set default output value
-		return eval(base64_decode("ZGVmaW5lKCdBRklfS0VZJywgJ25mOGdmOGFeMypzJyk7DQoJCWRlZmluZSgnQUZJX0lWJywgJ3MmJjkiZGE0JTpAJyk7DQoJCSRvdXRwdXQgPSBudWxsOw0KCQkvLyBTZXQgc2VjcmV0IGtleXMNCgkJJHNlY3JldF9rZXkgPSBBRklfS0VZOyANCgkJJHNlY3JldF9pdiA9IEFGSV9JVjsNCgkJJGtleSA9IGhhc2goJ3NoYTI1NicsJHNlY3JldF9rZXkpOw0KCQkkaXYgPSBzdWJzdHIoaGFzaCgnc2hhMjU2Jywkc2VjcmV0X2l2KSwwLDE2KTsNCgkJLy8gQ2hlY2sgd2hldGhlciBlbmNyeXB0aW9uIG9yIGRlY3J5cHRpb24NCgkJaWYoJGVuY3J5cHREZWNyeXB0ID09ICdlJyl7DQoJCSAgIC8vIFdlIGFyZSBlbmNyeXB0aW5nDQoJCSAgICRvdXRwdXQgPSBiYXNlNjRfZW5jb2RlKG9wZW5zc2xfZW5jcnlwdCgkc3RyaW5nVG9IYW5kbGUsIkFFUy0yNTYtQ0JDIiwka2V5LDAsJGl2KSk7DQoJCX1lbHNlIGlmKCRlbmNyeXB0RGVjcnlwdCA9PSAnZCcpew0KCQkgICAvLyBXZSBhcmUgZGVjcnlwdGluZw0KCQkgICAkb3V0cHV0ID0gb3BlbnNzbF9kZWNyeXB0KGJhc2U2NF9kZWNvZGUoJHN0cmluZ1RvSGFuZGxlKSwiQUVTLTI1Ni1DQkMiLCRrZXksMCwkaXYpOw0KCQl9DQoJCS8vIFJldHVybiB0aGUgZmluYWwgdmFsdWUNCgkJcmV0dXJuICRvdXRwdXQ7"));
-   }
 }
 
 if ( is_admin() )
