@@ -10,8 +10,8 @@ class MainClass
     public function auth_login($username, $password)
     {
         $body = array(
-            'user_name' => $username, //"09360004748",
-            'password' => $password, //"09360004748",
+            'user_name' => $username, 
+            'password' => $password,
             'remember_me' => true,
         );
 
@@ -22,12 +22,9 @@ class MainClass
                 'Content-Type' => 'application/json;charset=' . get_bloginfo('charset'),
             ),
         );
-        // var_dump($params);
         try {
             $response = wp_safe_remote_post(esc_url_raw(AUTH_LOGIN), $params);
             $result = json_decode($response['body'])->data;
-            // echo "<div style='direction:ltr'><pre>";
-            // echo "</pre></div>";
 
             if (!$result->errors) {
                 if (strlen($result) > 150) {
@@ -41,9 +38,7 @@ class MainClass
                     update_option("affilio_connected", false);
                 }
             }
-            // return "error";
         } catch (Exception $e) {
-            // return "error";
         }
         if (!empty($result) && is_string($result)) {
             $msg = '<div id="message" class="error notice is-dismissible"><p>' . $result . '</p></div>';
@@ -52,13 +47,6 @@ class MainClass
             $msg = '<div id="message" class="error notice is-dismissible"><p>اطلاعات نامعتبر است</p></div>';
             echo $msg;
         }
-        // echo "<div style='direction:ltr'><pre>";
-        // // parse_str($response['body'], $response_);
-        // // var_dump(json_decode($response['body'])->data);
-        // // var_dump($response['body']);
-        // // $GLOBALS['bearer'] = json_decode($response['body'])->data;
-        // // var_dump(esc_url_raw(AUTH_LOGIN));
-        // echo "</pre></div>";
     }
 
     function init_categories()
@@ -121,16 +109,6 @@ class MainClass
         );
 
         $response = wp_safe_remote_post(esc_url_raw(SYNC_CATEGORY_API), $params);
-        // get all categories of woo-commerce
-        // echo "<div style='direction:ltr'><pre>";
-        // echo esc_url_raw(SYNC_CATEGORY_API);
-        // print_r(json_encode($body, JSON_PRETTY_PRINT));
-        // // var_dump(wp_json_encode($body));
-        // print_r($a);
-        // parse_str($response['body'], $response_);
-        // print_r(json_encode);
-        // print_r($response->body->success);
-        // echo "</pre></div>";
 
         if (is_wp_error($response)) {
             $msg = '<div id="message" class="error notice is-dismissible"><p>خطای همگام سازی دسته بندی ها، لطفا مجددا تلاشی نمایید</p></div>';
@@ -200,11 +178,6 @@ class MainClass
             ),
         );
         $response = wp_safe_remote_post(esc_url_raw(SYNC_PRODUCT_API), $params);
-        // get all categories of woo-commerce
-        // echo "<div style='direction:ltr'><pre>";
-        // // print_r($params);
-        // print_r($response);
-        // echo "</pre></div>";
         if (is_wp_error($response)) {
             $msg = '<div id="message" class="error notice is-dismissible"><p>خطای همگام سازی محصولات، لطفا مجددا تلاش نمایید</p></div>';
             echo $msg;
@@ -214,7 +187,6 @@ class MainClass
             echo $msg;
             return new WP_Error('AFFILIO-api', 'Empty Response');
         }
-        // parse_str($response['body'], $response_);
         $isSuccess = json_decode($response['body'])->success;
         if($isSuccess){
             return true;
@@ -223,7 +195,6 @@ class MainClass
 
     function init_orders()
     {
-        // echo 'init_orders Fired on the WordPress initialization';
         $args = array(
             'post_type' => 'shop_order',
             //    'posts_per_page' => '-1'
@@ -239,26 +210,16 @@ class MainClass
 
         $body = [];
         foreach ($orders as $order) :
-            // echo "<div style='direction:ltr'><pre>";
-            // print_r(gettype($order));
-            // print_r($order);
-            // echo($order->date_created);
-            // echo "</pre></div>";
-
             $orderItems = [];
             foreach ($order->posts as $orderItem) :
                 array_push($orderItems, $orderItem);
             endforeach;
 
-            // var_dump($order->date_created);
-            // return;
-            // echo "<br/>";
-
             $val = array(
                 'basket_id' => $order->order_key,
                 'order_id' => $order->id,
-                'web_store_id' => WEB_STORE_ID,
-                'affiliate_id' => AFF_ID,
+                // 'web_store_id' => WEB_STORE_ID,
+                // 'affiliate_id' => AFF_ID,
                 'is_new_customer' => '',
                 // 'order_status' => $order->status,
                 'order_status' => 1,
@@ -286,10 +247,6 @@ class MainClass
             array_push($body, $val);
         endforeach;
 
-        // echo "<div style='direction:ltr'><pre>";
-        // print_r($body);
-        // echo "</pre></div>";
-
         $params = array(
             'body'    => json_encode($body),
             // 'timeout' => 60,
@@ -299,11 +256,6 @@ class MainClass
             ),
         );
         $response = wp_safe_remote_post(esc_url_raw(SYNC_ORDER_API), $params);
-        // get all categories of woo-commerce
-        // echo "<div style='direction:ltr'><pre>";
-        // print_r($params);
-        // print_r($response);
-        // echo "</pre></div>";
         if (is_wp_error($response)) {
             return $response;
         } elseif (empty($response['body'])) {
@@ -311,7 +263,4 @@ class MainClass
         }
         parse_str($response['body'], $response_);
     }
-
-    // function set_option_config($name, $value){
-    // }
 }

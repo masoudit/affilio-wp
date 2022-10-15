@@ -16,30 +16,8 @@ class AFFILIO {
 	}
 
     private function init(){
-		// wp_register_style( 'affilio-style', plugin_dir_path(AFI_PLUGIN_FILE) . 'style.css', array(), 324234);
-		// wp_enqueue_style( 'affilio-style');
-
 		$this->affilio_options = get_option( 'affilio_option_name' );
 		$aff = $this->affilio_options;
-		$username = $aff['username'];
-		if($username){
-			$main = new MainClass();
-			// $main->auth_login($username, $password);
-		}
-        // global $wpdb;
-        // $table = $wpdb->options;
-        // $afi_sent_cats_name = AFI_INFO_KEY;
-        // $results = $wpdb->get_results("SELECT * FROM {$table} WHERE option_name = '{$afi_sent_cats_name}'", OBJECT);
-        // $option_value = $results[0]->option_value;
-        // $data = json_decode($option_value);
-        // $this->affilio_options['username'] = $data->username;
-        // var_dump($data);
-        // echo "<br/>";
-        // var_dump($data->username);
-        // var_dump($data->password);
-        // $this->affilio_options['password'] = $data->password;
-        // $this->affilio_options['webstore'] = $data->webstore . "xxxxx";
-		
     }
 
 	private function syncMethod () {
@@ -77,39 +55,6 @@ class AFFILIO {
 				// show success login
 			}
 		}
-		// $result = $main->auth_login($);
-		// WP_Error( __( 'Sorry, you are not allowed to manage options for this site.' ) );
-		// show_message( __( 'WordPress updated successfully.' ) );
-		// error_log( __( 'WordPress updated successfully.' ) );
-		// if ( ! empty( $result ) ) {
-		// 	$msg = '<div id="message" class="error notice is-dismissible"><p>' . $result . '</p></div>';
-		// }
-		// echo $msg;
-
-		// return new WP_Error( 'bad_request', $result );
-		
-		// $this->affilio_options = get_option( 'affilio_option_name' );
-        // $affilio_options = $this->affilio_options;
-        // $username = $affilio_options['username']; // username
-        // $password = $affilio_options['password']; // password
-        // $webstore = $affilio_options['webstore']; // webstore
-        
-        // if($username){
-        //     $table = $wpdb->options;
-        //     $values = json_encode(array(
-        //         'username' => $username,
-        //         'password' => wp_hash_password($password),
-        //         'webstore' => $webstore,
-        //     ));
-        //     $data = array('option_name' => AFI_INFO_KEY, 'option_value' => $values);
-        //     $format = array('%s', '%s');
-        //     $result = $wpdb->insert($table, $data, $format);
-        //     if(!$result){
-        //         $where = array('option_name' => AFI_INFO_KEY);
-        //         $result = $wpdb->update($table, $data, $where);
-        //         var_dump($result);
-        //     }
-        // }
     }
 
 	public function affilio_add_plugin_page() {
@@ -284,11 +229,3 @@ class AFFILIO {
 
 if ( is_admin() )
 	$affilio = new AFFILIO();
-
-/* 
- * Retrieve this value with:
- * $affilio_options = get_option( 'affilio_option_name' ); // Array of All Options
- * $username = $affilio_options['username']; // username
- * $password = $affilio_options['password']; // password
- * $webstore = $affilio_options['webstore']; // webstore
- */

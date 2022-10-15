@@ -19,7 +19,7 @@ function call_after_new_customer_insert($user_id)
     $body = array(array(
         "user_id" => $user_id,
         "web_store_code" => $webstore,
-        "affiliate_id" => $_COOKIE[AFF_ID]
+        "affiliate_id" => $_COOKIE['AFF_ID']
     ));
 
     $params = array(
@@ -41,10 +41,7 @@ function call_after_new_customer_insert($user_id)
 
 function call_after_order_insert($id, $pre, $next)
 {
-    // log_me('v------------');
     // log_me($pre);
-    // log_me($next);
-    // // log_me("this is message". $id);
     // echo 'init_orders Fired on the WordPress initialization';
     $args = array(
         'post_type' => 'shop_order',
@@ -65,20 +62,11 @@ function call_after_order_insert($id, $pre, $next)
 
     $body = [];
     foreach ($orders as $order) :
-        // echo "<div style='direction:ltr'><pre>";
-        // print_r(gettype($order));
-        // print_r($order);
-        // echo($order->date_created);
-        // echo "</pre></div>";
-
         $orderItems = [];
         foreach ($order->posts as $orderItem) :
             array_push($orderItems, $orderItem);
         endforeach;
 
-        // var_dump($order->date_created);
-        // return;
-        // echo "<br/>";
         $options = get_option( 'affilio_option_name' );
         $webstore = $options['webstore'];
 
@@ -113,10 +101,6 @@ function call_after_order_insert($id, $pre, $next)
         );
         array_push($body, $val);
     endforeach;
-
-    // echo "<div style='direction:ltr'><pre>";
-    // print_r($body);
-    // echo "</pre></div>";
 
     $params = array(
         'body'    => json_encode($body),
@@ -160,9 +144,6 @@ function call_after_order_insert($id, $pre, $next)
         $response = wp_safe_remote_post(esc_url_raw(SYNC_ORDER_UPDATE_API), $params);
         $isSuccess = json_decode($response['body'])->success;
         // log_me($isSuccess);
-        if($isSuccess){
-            // set_option(AFI_LAST_ORDER, $id);
-        }
 
         if (is_wp_error($response)) {
             return $response;
@@ -170,12 +151,10 @@ function call_after_order_insert($id, $pre, $next)
             return new WP_Error('AFFILIO-api', 'Empty Response');
         }
     }
-    // parse_str($response['body'], $response_);
 }
 
 function call_after_order_update($id)
 {
-    // log_me('v------------');
 }
 
 function call_after_order_cancel($order_id)
