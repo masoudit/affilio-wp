@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Plugin Name: Affilo Integration Wordpress
+ * Plugin Name: Affilo Integration
  * Plugin URI: https://www.Affilo.ir/
- * Description: Affilo Integration Wordpress PLugin.
+ * Description: Affilo Integration Wordpress/Woocommerce PLugin.
  * Version: 1.0
  * Author: MASOUD
  * Author URI: http://Affilo.ir/
