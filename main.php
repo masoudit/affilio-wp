@@ -1,16 +1,19 @@
 <?php
 class MainClass
 {
-    public function __construct() {
-		$affilio_options = get_option( 'affilio_option_name' );
-		$webId = $affilio_options['webstore']; // username
-        define('WEB_STORE_ID', $webId);
-	}
+    public function __construct()
+    {
+        $affilio_options = get_option('affilio_option_name');
+        $webId = $affilio_options['webstore']; // username
+        if (!defined('WEB_STORE_ID')) {
+            define('WEB_STORE_ID', $webId);
+        }
+    }
 
     public function auth_login($username, $password)
     {
         $body = array(
-            'user_name' => $username, 
+            'user_name' => $username,
             'password' => $password,
             'remember_me' => true,
         );
@@ -25,8 +28,9 @@ class MainClass
         try {
             $response = wp_safe_remote_post(esc_url_raw(AUTH_LOGIN), $params);
             $result = json_decode($response['body'])->data;
-
-            if (!$result->errors) {
+            $hasError = isset($result->errors);
+            // log_me($hasError);
+            if (!$hasError) {
                 if (strlen($result) > 150) {
                     $GLOBALS['bearer'] = $result;
                     add_option("affilio_connected", true);
@@ -34,7 +38,7 @@ class MainClass
                     update_option("affilio_connected", true);
                     update_option("affilio_token", $result);
                     return $result;
-                }else {
+                } else {
                     update_option("affilio_connected", false);
                 }
             }
@@ -120,7 +124,7 @@ class MainClass
             return new WP_Error('AFFILIO-api', 'Empty Response');
         }
         $isSuccess = json_decode($response['body'])->success;
-        if($isSuccess){
+        if ($isSuccess) {
             return true;
         }
     }
@@ -188,7 +192,7 @@ class MainClass
             return new WP_Error('AFFILIO-api', 'Empty Response');
         }
         $isSuccess = json_decode($response['body'])->success;
-        if($isSuccess){
+        if ($isSuccess) {
             return true;
         }
     }

@@ -1,5 +1,5 @@
 <?php 
-if($_COOKIE['AFF_ID'] && !is_admin()){
+if(isset($_COOKIE['AFF_ID']) && !is_admin()){
     add_action('woocommerce_order_status_cancelled', 'call_after_order_cancel');
     // add_action('woocommerce_order_status_pending', 'call_after_order_insert');
     add_action('woocommerce_order_status_changed', 'call_after_order_insert', 10, 3);

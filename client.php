@@ -1,9 +1,11 @@
 <?php
-define('AFI_INFO_KEY', 'afi_info');
 include __DIR__ . '/main.php';
 
 if ( ! defined( 'AFI_PLUGIN_FILE' ) ) {
 	define( 'AFI_PLUGIN_FILE', __FILE__ );
+}
+if ( ! defined( 'AFI_INFO_KEY' ) ) {
+	define('AFI_INFO_KEY', 'afi_info');
 }
 
 class AFFILIO {
