@@ -1,20 +1,19 @@
 # AFFILIO WP INTEGRAION
-## Affilio Integration Wordpress/Woocommerce PLugin
+## Affilio Integration WordPress/Woocommerce Plugin
 
-Affilio is a Affiliate marketing solution to promote and sell products, paying them a commission every time they sell something.
-Affilio-Wp-Integraion Plugin is designed for Wordpress woocommerce.
+Affilio is an Affiliate marketing solution to promote and sell products, paying them a commission every time they sell something. Affilio-Wp-Integraion Plugin is designed for WordPress Woocommerce e-commerce.
 
 ## Features
 
-- Auto sync your products, categoties, orders and users by Afiilio PLatform
-- Handling all needing oprations of Affilio platform
+- Auto-sync your products, categories, orders, and users by the Afiilio PLatform
+- Handling all needed oprations of the Affilio platform
 
 ## Installation
 
-Affilio-Wp-Integraion requires [wordress](https://wordpress.org/) v5+ and  [woocommerce](https://woocommerce.org/) v5+ to run.
+Affilio-Wp-Integration requires [wordress](https://wordpress.org/) v5+ and  [woocommerce](https://woocommerce.org/) v5+ to run.
 
-Install the dependencies and devDependencies and start the server.
-Install from your plugins.
+Install the dependencies and devDependencies and start the server. 
+Install from your plugin.
 
 ## License
 
