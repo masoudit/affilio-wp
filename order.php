@@ -42,19 +42,10 @@ function call_after_new_customer_insert($user_id)
 function call_after_order_insert($id, $pre, $next)
 {
     // log_me($pre);
-    // echo 'init_orders Fired on the WordPress initialization';
     $args = array(
         'post_type' => 'shop_order',
         //    'posts_per_page' => '-1'
     );
-    // $loop = new WP_Query($args);
-    // $orders = wc_get_orders(
-    //     array(
-    //         // 'limit'    => 1,
-    //         // 'status'   => array_map( 'wc_get_order_status_name', wc_get_is_paid_statuses() ),
-    //         // 'customer' => $user->ID,
-    //     )
-    // );
     $order_ = wc_get_order(
         $id
     );

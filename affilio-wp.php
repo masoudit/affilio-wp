@@ -1,12 +1,12 @@
 <?php
 
 /**
- * Plugin Name: Affilo Integration
- * Plugin URI: https://www.Affilo.ir/
- * Description: Affilo Integration Wordpress/Woocommerce PLugin.
+ * Plugin Name: Affilio Integration
+ * Plugin URI: https://www.Affilio.ir/
+ * Description: Affilio Integration Wordpress/Woocommerce PLugin.
  * Version: 1.0
- * Author: MASOUD
- * Author URI: http://Affilo.ir/
+ * Author: Masoud
+ * Author URI: https://github.com/masoudit
  **/
 if (!defined('ABSPATH')) {
     exit;
