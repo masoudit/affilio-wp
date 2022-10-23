@@ -1,12 +1,12 @@
 <?php
-class MainClass
+class Affilio_Main
 {
     public function __construct()
     {
         $affilio_options = get_option('affilio_option_name');
         $webId = $affilio_options['webstore']; // username
-        if (!defined('WEB_STORE_ID')) {
-            define('WEB_STORE_ID', $webId);
+        if (!defined('AFFILIO_WEB_STORE_ID')) {
+            define('AFFILIO_WEB_STORE_ID', $webId);
         }
     }
 
@@ -26,30 +26,36 @@ class MainClass
             ),
         );
         try {
-            $response = wp_safe_remote_post(esc_url_raw(AUTH_LOGIN), $params);
-            $result = json_decode($response['body'])->data;
-            $hasError = isset($result->errors);
-            // log_me($hasError);
-            if (!$hasError) {
-                if (strlen($result) > 150) {
-                    $GLOBALS['bearer'] = $result;
-                    add_option("affilio_connected", true);
-                    add_option("affilio_token", $result);
-                    update_option("affilio_connected", true);
-                    update_option("affilio_token", $result);
-                    return $result;
-                } else {
-                    update_option("affilio_connected", false);
+            $response = wp_safe_remote_post(esc_url_raw(AFFILIO_AUTH_LOGIN), $params);
+            $hasError = null;
+            if (!is_wp_error($response)) {
+                $result = wp_remote_retrieve_body($response);
+                $result = json_decode($result)->data;
+                $hasError = isset($result->errors);
+                if (!$hasError) {
+                    if (strlen($result) > 150) {
+                        $GLOBALS['bearer'] = $result;
+                        add_option("affilio_connected", true);
+                        add_option("affilio_token", $result);
+                        update_option("affilio_connected", true);
+                        update_option("affilio_token", $result);
+                        return $result;
+                    } else {
+                        update_option("affilio_connected", false);
+                    }
                 }
             }
+            if ($hasError && is_string($hasError)) {
+                $msg = '<div id="message" class="error notice is-dismissible"><p>' . $result . '</p></div>';
+                echo esc_html($msg);
+                return;
+            } else {
+                $msg = '<div id="message" class="error notice is-dismissible"><p>اطلاعات نامعتبر است</p></div>';
+                echo esc_html($msg);
+            }
         } catch (Exception $e) {
-        }
-        if (!empty($result) && is_string($result)) {
-            $msg = '<div id="message" class="error notice is-dismissible"><p>' . $result . '</p></div>';
-            echo $msg;
-        } else {
             $msg = '<div id="message" class="error notice is-dismissible"><p>اطلاعات نامعتبر است</p></div>';
-            echo $msg;
+            echo esc_html($msg);
         }
     }
 
@@ -92,7 +98,7 @@ class MainClass
         $body = [];
         foreach ($categories as $cat) {
             $val = array(
-                'web_store_id' => WEB_STORE_ID,
+                'web_store_id' => AFFILIO_WEB_STORE_ID,
                 'title' => $cat->cat_name,
                 'category_id' => $cat->cat_ID,
                 'parent_category_id' => $cat->category_parent,
@@ -112,15 +118,15 @@ class MainClass
             ),
         );
 
-        $response = wp_safe_remote_post(esc_url_raw(SYNC_CATEGORY_API), $params);
+        $response = wp_safe_remote_post(esc_url_raw(AFFILIO_SYNC_CATEGORY_API), $params);
 
         if (is_wp_error($response)) {
             $msg = '<div id="message" class="error notice is-dismissible"><p>خطای همگام سازی دسته بندی ها، لطفا مجددا تلاشی نمایید</p></div>';
-            echo $msg;
+            echo esc_html($msg);
             return $response;
         } elseif (empty($response['body'])) {
             $msg = '<div id="message" class="error notice is-dismissible"><p>خطای همگام سازی دسته بندی ها، لطفا مجددا تلاش نمایید</p></div>';
-            echo $msg;
+            echo esc_html($msg);
             return new WP_Error('AFFILIO-api', 'Empty Response');
         }
         $isSuccess = json_decode($response['body'])->success;
@@ -150,7 +156,7 @@ class MainClass
             $val = array(
                 'id' => $product->id,
                 'title' => $product->name,
-                'web_store_id' => WEB_STORE_ID,
+                'web_store_id' => AFFILIO_WEB_STORE_ID,
                 'category_id' => end($product->category_ids),
                 'landing' => "",
                 'description' => $product->description,
@@ -181,14 +187,14 @@ class MainClass
                 'Authorization' => 'Bearer ' . $GLOBALS['bearer'],
             ),
         );
-        $response = wp_safe_remote_post(esc_url_raw(SYNC_PRODUCT_API), $params);
+        $response = wp_safe_remote_post(esc_url_raw(AFFILIO_SYNC_PRODUCT_API), $params);
         if (is_wp_error($response)) {
             $msg = '<div id="message" class="error notice is-dismissible"><p>خطای همگام سازی محصولات، لطفا مجددا تلاش نمایید</p></div>';
-            echo $msg;
+            echo esc_html($msg);
             return $response;
         } elseif (empty($response['body'])) {
             $msg = '<div id="message" class="error notice is-dismissible"><p>خطای همگام سازی محصولات، لطفا مجددا تلاش نمایید</p></div>';
-            echo $msg;
+            echo esc_html($msg);
             return new WP_Error('AFFILIO-api', 'Empty Response');
         }
         $isSuccess = json_decode($response['body'])->success;
@@ -222,7 +228,7 @@ class MainClass
             $val = array(
                 'basket_id' => $order->order_key,
                 'order_id' => $order->id,
-                // 'web_store_id' => WEB_STORE_ID,
+                // 'web_store_id' => AFFILIO_WEB_STORE_ID,
                 // 'affiliate_id' => AFF_ID,
                 'is_new_customer' => '',
                 // 'order_status' => $order->status,
@@ -259,7 +265,7 @@ class MainClass
                 'Authorization' => 'Bearer ' . $GLOBALS['bearer'],
             ),
         );
-        $response = wp_safe_remote_post(esc_url_raw(SYNC_ORDER_API), $params);
+        $response = wp_safe_remote_post(esc_url_raw(AFFILIO_SYNC_ORDER_API), $params);
         if (is_wp_error($response)) {
             return $response;
         } elseif (empty($response['body'])) {

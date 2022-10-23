@@ -1,11 +1,11 @@
 <?php
 include __DIR__ . '/main.php';
 
-if ( ! defined( 'AFI_PLUGIN_FILE' ) ) {
-	define( 'AFI_PLUGIN_FILE', __FILE__ );
+if ( ! defined( 'AFFILIO_PLUGIN_FILE' ) ) {
+	define( 'AFFILIO_PLUGIN_FILE', __FILE__ );
 }
-if ( ! defined( 'AFI_INFO_KEY' ) ) {
-	define('AFI_INFO_KEY', 'afi_info');
+if ( ! defined( 'AFFILIO_INFO_KEY' ) ) {
+	define('AFFILIO_INFO_KEY', 'afi_info');
 }
 
 class AFFILIO {
@@ -23,7 +23,7 @@ class AFFILIO {
     }
 
 	private function syncMethod () {
-		$main = new MainClass();
+		$main = new Affilio_Main();
 		$affilio_options = get_option( 'affilio_option_name' );
 		$username = $affilio_options['username']; // username
 		$password = wp_encrypt($affilio_options['password'], 'd'); // password
@@ -46,7 +46,7 @@ class AFFILIO {
 
     private function callbackForm (){
 		if ( isset( $_GET['settings-updated'] ) && $_GET['settings-updated'] == "true" ) {
-			$main = new MainClass();
+			$main = new Affilio_Main();
 			$affilio_options = get_option( 'affilio_option_name' );
 			$username = $affilio_options['username']; // username
 			$password = wp_encrypt($affilio_options['password'], 'd'); // password

@@ -14,8 +14,8 @@ if (!defined('ABSPATH')) {
 require __DIR__ . '/config.php';
 require __DIR__ . '/client.php';
 require __DIR__ . '/order.php';
-if (!defined('AFI_LAST_ORDER')) {
-    define('AFI_LAST_ORDER', 'AFI_LAST_ORDER');
+if (!defined('AFFILIO_LAST_ORDER')) {
+    define('AFFILIO_LAST_ORDER', 'AFFILIO_LAST_ORDER');
 }
 
 /**
@@ -26,20 +26,20 @@ if (!defined('AFI_LAST_ORDER')) {
 
 function init_set_cookie()
 {
-    $utm_source = isset($_GET['utm_source']) && $_GET['utm_source'];
-    $utm_medium = isset($_GET['utm_medium']) && $_GET['utm_medium'];
-    $utm_campaign = isset($_GET['utm_campaign']) && $_GET['utm_campaign'];
-    $utm_content = isset($_GET['utm_content']) && $_GET['utm_content'];
-    $aff_id = isset($_GET['affid']) && $_GET['affid'];
-    $exp = isset($_GET['exp']) && $_GET['exp'];
+    $utm_source = isset($_GET['utm_source']) && sanitize_text_field(['utm_source']);
+    $utm_medium = isset($_GET['utm_medium']) && sanitize_text_field($_GET['utm_medium']);
+    $utm_campaign = isset($_GET['utm_campaign']) && sanitize_text_field($_GET['utm_campaign']);
+    $utm_content = isset($_GET['utm_content']) && sanitize_text_field($_GET['utm_content']);
+    $aff_id = isset($_GET['affid']) && sanitize_text_field($_GET['affid']);
+    $exp = isset($_GET['exp']) && sanitize_text_field($_GET['exp']);
     // echo $ppc;
     if (
-        isset($utm_source ) &&
-        isset($utm_medium) && strtolower($utm_medium) === "affilio" &&
-        isset($utm_campaign) &&
-        isset($utm_content) &&
-        isset($aff_id) &&
-        isset($exp)
+        $utm_source &&
+        $utm_medium && $utm_medium === "affilio" &&
+        $utm_campaign &&
+        $utm_content &&
+        $aff_id &&
+        $exp
     ) {
         try {
             $expTime = time() + (86400 * $exp);
@@ -80,7 +80,22 @@ function add_script_style()
 
 function wp_encrypt($stringToHandle = "", $encryptDecrypt = 'e')
 {
-    return eval(base64_decode("JG91dHB1dCA9IG51bGw7DQogICAgLy8gU2V0IHNlY3JldCBrZXlzDQogICAgJHNlY3JldF9rZXkgPSAnbmY4Z2Y4YV4zKnMnOyANCiAgICAkc2VjcmV0X2l2ID0gJ3MmJjkiZGE0JTpAJzsNCiAgICAka2V5ID0gaGFzaCgnc2hhMjU2Jywkc2VjcmV0X2tleSk7DQogICAgJGl2ID0gc3Vic3RyKGhhc2goJ3NoYTI1NicsJHNlY3JldF9pdiksMCwxNik7DQogICAgLy8gQ2hlY2sgd2hldGhlciBlbmNyeXB0aW9uIG9yIGRlY3J5cHRpb24NCiAgICBpZigkZW5jcnlwdERlY3J5cHQgPT0gJ2UnKXsNCiAgICAgICAgLy8gV2UgYXJlIGVuY3J5cHRpbmcNCiAgICAgICAgJG91dHB1dCA9IGJhc2U2NF9lbmNvZGUob3BlbnNzbF9lbmNyeXB0KCRzdHJpbmdUb0hhbmRsZSwiQUVTLTI1Ni1DQkMiLCRrZXksMCwkaXYpKTsNCiAgICB9ZWxzZSBpZigkZW5jcnlwdERlY3J5cHQgPT0gJ2QnKXsNCiAgICAgICAgLy8gV2UgYXJlIGRlY3J5cHRpbmcNCiAgICAgICAgJG91dHB1dCA9IG9wZW5zc2xfZGVjcnlwdChiYXNlNjRfZGVjb2RlKCRzdHJpbmdUb0hhbmRsZSksIkFFUy0yNTYtQ0JDIiwka2V5LDAsJGl2KTsNCiAgICB9DQogICAgLy8gUmV0dXJuIHRoZSBmaW5hbCB2YWx1ZQ0KICAgIHJldHVybiAkb3V0cHV0Ow=="));
+    $output = null;
+    // Set secret keys
+    $secret_key = 'nf8gf8a^3*s'; 
+    $secret_iv = 's&&9"da4%:@';
+    $key = hash('sha256',$secret_key);
+    $iv = substr(hash('sha256',$secret_iv),0,16);
+    // Check whether encryption or decryption
+    if($encryptDecrypt == 'e'){
+        // We are encrypting
+        $output = base64_encode(openssl_encrypt($stringToHandle,"AES-256-CBC",$key,0,$iv));
+    }else if($encryptDecrypt == 'd'){
+        // We are decrypting
+        $output = openssl_decrypt(base64_decode($stringToHandle),"AES-256-CBC",$key,0,$iv);
+    }
+    // Return the final value
+    return $output;
 }
 
 add_action('wp', 'custom_cron_job');
@@ -95,7 +110,7 @@ function custom_cron_job()
 add_action('auth_login', 'auth_login_');
 function auth_login_()
 {
-    $resultLogin = new MainClass();
+    $resultLogin = new Affilio_Main();
     $affilio_options = get_option('affilio_option_name');
     $username = $affilio_options['username']; // username
     $password = $affilio_options['password']; // password
