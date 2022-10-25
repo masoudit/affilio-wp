@@ -45,7 +45,7 @@ function init_set_cookie()
             $expTime = time() + (86400 * $exp);
             setcookie("AFF_ID", $aff_id, $expTime);
         } catch (Exception $e) {
-            var_dump($e);
+            // var_dump($e);
         }
     }
 }
@@ -128,4 +128,17 @@ function set_option($name, $value)
 if (is_admin()) {
     // add_action('wp_head', 'add_script_style');
     add_script_style();
+}
+
+add_action( 'added_post_meta', 'mp_sync_on_product_save', 10, 4 );
+add_action( 'updated_post_meta', 'mp_sync_on_product_save', 10, 4 );
+function mp_sync_on_product_save( $meta_id, $post_id, $meta_key, $meta_value ) {
+    if ( $meta_key == '_edit_lock' ) { // we've been editing the post
+        if ( get_post_type( $post_id ) == 'product' ) { // we've been editing a product
+            $affilio = new AFFILIO();
+            $affilio->syncMethod('product');
+            // $product = wc_get_product( $post_id );
+            // log_me($post_id);
+        }
+    }
 }

@@ -22,7 +22,8 @@ class AFFILIO {
 		$aff = $this->affilio_options;
     }
 
-	private function syncMethod () {
+	// $type: product | category
+	public function syncMethod ($type = null) {
 		$main = new Affilio_Main();
 		$affilio_options = get_option( 'affilio_option_name' );
 		$username = $affilio_options['username']; // username
@@ -31,6 +32,14 @@ class AFFILIO {
 		if($result){
 			// var_dump($GLOBALS['bearer']);
 			// echo "Sync_Loading";
+			if($type === "category"){
+				$result = $main->init_categories();
+				return;
+			}
+			if($type === "products"){
+				$resultP = $main->init_products();
+				return;
+			}
 			$result = $main->init_categories();
 			if($result === true){
 				$resultP = $main->init_products();
