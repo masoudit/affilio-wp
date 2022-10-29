@@ -6,22 +6,8 @@ if ($AF_ID && !is_admin()) {
     add_action('woocommerce_order_status_cancelled', 'affilio_call_after_order_cancel');
     $bearer = get_option("affilio_token");
     define('AFFILIO_BEARER', $bearer);
-    // add_action('woocommerce_order_status_processing', 'call_after_order_update');
-    // add_action('woocommerce_after_order_details', 'affilio_call_after_order_update');
-    // add_action( 'woocommerce_order_status_changed', array( $this, 'track_order_status_change' ), 10, 3 );
-    // add_action('woocommerce_new_order', 'affilio_call_new_order_insert',  10, 1);
-    // add_action('woocommerce_thankyou', 'affilio_call_new_order_insert',  10, 1);
-    // add_action('woocommerce_order_status_pending', 'call_after_order_insert');
     
 }
-
-// add_action('woocommerce_order_status_changed', 'affilio_call_after_order_update1', 10, 3);
-
-// function affilio_call_after_order_update1($id, $pre, $next){
-//     affilio_log_me($id);
-//     affilio_log_me($pre);
-//     affilio_log_me($next);
-// }
 
 function affilio_call_after_new_customer_insert($user_id)
 {
@@ -52,7 +38,6 @@ function affilio_call_after_new_customer_insert($user_id)
 
 function affilio_call_after_order_update($id, $pre, $next)
 {
-    // affilio_log_me($pre);
     $args = array(
         'post_type' => 'shop_order',
         //    'posts_per_page' => '-1'
@@ -187,7 +172,6 @@ function affilio_call_after_order_cancel($order_id)
 function affilio_call_new_order_insert($order_id)
 {
     echo "<div style='direction:ltr;'><pre>";
-    // var_dump($order_id);
     echo "</pre></div>";
 }
 
