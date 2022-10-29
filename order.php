@@ -1,27 +1,27 @@
 <?php
-// require(dirname(__FILE__) . '/wp-load.php');
-
-if (isset($_COOKIE['AFF_ID']) && !is_admin()) {
-    add_action('woocommerce_order_status_cancelled', 'affilio_call_after_order_cancel');
-    // add_action('woocommerce_order_status_pending', 'call_after_order_insert');
+$AF_ID = isset($_COOKIE['AFF_ID']) && sanitize_text_field($_COOKIE['AFF_ID']);
+if ($AF_ID && !is_admin()) {
+    add_action('user_register', 'affilio_call_after_new_customer_insert');
     add_action('woocommerce_order_status_changed', 'affilio_call_after_order_update', 10, 3);
+    add_action('woocommerce_order_status_cancelled', 'affilio_call_after_order_cancel');
+    $bearer = get_option("affilio_token");
+    define('AFFILIO_BEARER', $bearer);
     // add_action('woocommerce_order_status_processing', 'call_after_order_update');
     // add_action('woocommerce_after_order_details', 'affilio_call_after_order_update');
     // add_action( 'woocommerce_order_status_changed', array( $this, 'track_order_status_change' ), 10, 3 );
-    add_action('user_register', 'affilio_call_after_new_customer_insert');
     // add_action('woocommerce_new_order', 'affilio_call_new_order_insert',  10, 1);
     // add_action('woocommerce_thankyou', 'affilio_call_new_order_insert',  10, 1);
-    $bearer = get_option("affilio_token");
-    define('AFFILIO_BEARER', $bearer);
+    // add_action('woocommerce_order_status_pending', 'call_after_order_insert');
+    
 }
 
-add_action('woocommerce_order_status_changed', 'affilio_call_after_order_update1', 10, 3);
+// add_action('woocommerce_order_status_changed', 'affilio_call_after_order_update1', 10, 3);
 
-function affilio_call_after_order_update1($id, $pre, $next){
-    log_me($id);
-    log_me($pre);
-    log_me($next);
-}
+// function affilio_call_after_order_update1($id, $pre, $next){
+//     affilio_log_me($id);
+//     affilio_log_me($pre);
+//     affilio_log_me($next);
+// }
 
 function affilio_call_after_new_customer_insert($user_id)
 {
@@ -42,7 +42,7 @@ function affilio_call_after_new_customer_insert($user_id)
         ),
     );
     $response = wp_safe_remote_post(esc_url_raw(AFFILIO_SYNC_NEW_CUSTOMER_API), $params);
-    // log_me($response);
+    // affilio_log_me($response);
     if (is_wp_error($response)) {
         return $response;
     } elseif (empty($response['body'])) {
@@ -52,7 +52,7 @@ function affilio_call_after_new_customer_insert($user_id)
 
 function affilio_call_after_order_update($id, $pre, $next)
 {
-    // log_me($pre);
+    // affilio_log_me($pre);
     $args = array(
         'post_type' => 'shop_order',
         //    'posts_per_page' => '-1'
@@ -117,9 +117,9 @@ function affilio_call_after_order_update($id, $pre, $next)
     if ($pre === 'pending' && $next === 'processing') {
         $response = wp_safe_remote_post(esc_url_raw(AFFILIO_SYNC_ORDER_API), $params);
         $isSuccess = json_decode($response['body'])->success;
-        // log_me($isSuccess);
+        // affilio_log_me($isSuccess);
         if ($isSuccess) {
-            set_option(AFFILIO_LAST_ORDER, $id);
+            affilio_set_option(AFFILIO_LAST_ORDER, $id);
         }
 
         if (is_wp_error($response)) {
@@ -131,9 +131,9 @@ function affilio_call_after_order_update($id, $pre, $next)
     if ($next === 'canceled') {
         $response = wp_safe_remote_post(esc_url_raw(AFFILIO_SYNC_ORDER_CANCEL_API), $params);
         $isSuccess = json_decode($response['body'])->success;
-        // log_me($isSuccess);
+        // affilio_log_me($isSuccess);
         if ($isSuccess) {
-            // set_option(AFFILIO_LAST_ORDER, $id);
+            // affilio_set_option(AFFILIO_LAST_ORDER, $id);
         }
 
         if (is_wp_error($response)) {
@@ -145,7 +145,7 @@ function affilio_call_after_order_update($id, $pre, $next)
     if ($next) {
         $response = wp_safe_remote_post(esc_url_raw(AFFILIO_SYNC_ORDER_UPDATE_API), $params);
         $isSuccess = json_decode($response['body'])->success;
-        // log_me($isSuccess);
+        // affilio_log_me($isSuccess);
 
         if (is_wp_error($response)) {
             return $response;
@@ -157,8 +157,8 @@ function affilio_call_after_order_update($id, $pre, $next)
 
 function affilio_call_after_order_cancel($order_id)
 {
-    log_me('This is a message for debugging purposes');
-    log_me(array("This is a message" => 'xx', 'orderId' => $order_id));
+    affilio_log_me('This is a message for debugging purposes');
+    affilio_log_me(array("This is a message" => 'xx', 'orderId' => $order_id));
 
     $body = array(array(
         "order_id" => $order_id,
@@ -187,15 +187,14 @@ function affilio_call_after_order_cancel($order_id)
 function affilio_call_new_order_insert($order_id)
 {
     echo "<div style='direction:ltr;'><pre>";
-    var_dump($order_id);
+    // var_dump($order_id);
     echo "</pre></div>";
 }
 
 
-
+// TEST METHOD
 // add_action( 'woocommerce_loaded', 'testfunctiontest' );
 add_action('init', 'affilio_init', 10, 0);
-
 function affilio_init()
 {
     // $local_tz = new \DateTimeZone(wc_timezone_string());

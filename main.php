@@ -46,16 +46,19 @@ class Affilio_Main
                 }
             }
             if ($hasError && is_string($hasError)) {
-                $msg = '<div id="message" class="error notice is-dismissible"><p>' . $result . '</p></div>';
-                echo esc_html($msg);
+                // $msg = '<div id="message" class="error notice is-dismissible"><p>' . $result . '</p></div>';
+                // echo ($msg);
+                affilio_admin_notice('error', $result);
                 return;
             } else {
-                $msg = '<div id="message" class="error notice is-dismissible"><p>اطلاعات نامعتبر است</p></div>';
-                echo esc_html($msg);
+                // $msg = '<div id="message" class="error notice is-dismissible"><p>اطلاعات نامعتبر است</p></div>';
+                // echo ($msg);
+                affilio_admin_notice('error', 'اطلاعات نامعتبر است');
             }
         } catch (Exception $e) {
-            $msg = '<div id="message" class="error notice is-dismissible"><p>اطلاعات نامعتبر است</p></div>';
-            echo esc_html($msg);
+            // $msg = '<div id="message" class="error notice is-dismissible"><p>اطلاعات نامعتبر است</p></div>';
+            // echo ($msg);
+            affilio_admin_notice('error', 'اطلاعات نامعتبر است');
         }
     }
 
