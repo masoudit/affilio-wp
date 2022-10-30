@@ -24,3 +24,6 @@ if(!defined('AFFILIO_SYNC_ORDER_CANCEL_API'))
 
 if(!defined('AFFILIO_SYNC_NEW_CUSTOMER_API'))
     define( 'AFFILIO_SYNC_NEW_CUSTOMER_API', AFFILIO_BASE_API . "/sync/newCustomer/insert");
+    
+if(!defined('AFFILIO_MIN_WOOCOMMERCE_VERSION'))
+    define( 'AFFILIO_MIN_WOOCOMMERCE_VERSION', '3.9.4');

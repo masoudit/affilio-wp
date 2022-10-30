@@ -258,11 +258,24 @@ function affilio_sync_on_product_save($meta_id, $post_id, $meta_key, $meta_value
 {
 	if ($meta_key == '_edit_lock') { // we've been editing the post
 		if (get_post_type($post_id) == 'product') { // we've been editing a product
-			$affilio = new AFFILIO();
-			$affilio->syncMethod('product');
+			$affilio = new Affilio_Main();
+			$affilio->sync_new_product('product');
 			// $product = wc_get_product( $post_id );
 			// affilio_log_me($post_id);
 		}
+	}
+}
+
+
+function affilio_update_category_function($category_id)
+{
+	if (get_term($category_id)->taxonomy == 'product_cat') { // we've been editing a product
+		// affilio_log_me($category_id);
+		// affilio_log_me(get_term($category_id));
+		$affilio = new Affilio_Main();
+		$affilio->sync_new_category($category_id);
+		// $product = wc_get_product( $post_id );
+		// affilio_log_me($post_id);
 	}
 }
 
@@ -271,4 +284,6 @@ if (is_admin()) {
 	// do_action('admin_notices', 'success');
 	add_action('added_post_meta', 'affilio_sync_on_product_save', 10, 4);
 	add_action('updated_post_meta', 'affilio_sync_on_product_save', 10, 4);
+	add_action('created_term', 'affilio_update_category_function', 10, 4);
+	add_action('edited_terms', 'affilio_update_category_function', 10, 4);
 }

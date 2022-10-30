@@ -42,14 +42,44 @@ function affilio_set_option($name, $value)
     }
 }
 
-function affilio_admin_notice($type = 'success', $msg) {
-    if($type !== 'success'){
+function affilio_admin_notice($type = 'success', $msg)
+{
+    if ($type !== 'success') {
         $class = 'notice notice-error is-dismissible';
-        $message = __( $msg, 'affilio' );
-    }else {
+        $message = __($msg, 'affilio');
+    } else {
         $class = 'notice notice-success is-dismissible';
-        $message = __( $msg, 'affilio' );
+        $message = __($msg, 'affilio');
     }
 
-	printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), esc_html( $message ) ); 
+    printf('<div class="%1$s"><p>%2$s</p></div>', esc_attr($class), esc_html($message));
+}
+
+function affilio_is_plugin_active( $plugin_name ) {
+
+    $active_plugins = (array) get_option( 'active_plugins', array() );
+
+    if ( is_multisite() ) {
+        $active_plugins = array_merge( $active_plugins, array_keys( get_site_option( 'active_sitewide_plugins', array() ) ) );
+    }
+
+    $plugin_filenames = array();
+
+    foreach ( $active_plugins as $plugin ) {
+
+        if ( false !== strpos( $plugin, '/' ) ) {
+
+            // normal plugin name (plugin-dir/plugin-filename.php)
+            list( , $filename ) = explode( '/', $plugin );
+
+        } else {
+
+            // no directory, just plugin file
+            $filename = $plugin;
+        }
+
+        $plugin_filenames[] = $filename;
+    }
+
+    return in_array( $plugin_name, $plugin_filenames );
 }
