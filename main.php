@@ -7,6 +7,7 @@ class Affilio_Main
         $webId = $affilio_options['webstore']; // username
         if (!defined('AFFILIO_WEB_STORE_ID')) {
             define('AFFILIO_WEB_STORE_ID', $webId);
+            $GLOBALS['bearer'] = get_option('affilio_token');
         }
     }
 
@@ -75,7 +76,7 @@ class Affilio_Main
             )
         );
         $max_cat = reset($categories);
-        if($max_cat->term_id == $last_sent_cat_id ){
+        if ($max_cat->term_id == $last_sent_cat_id) {
             // return true;
             affilio_log_me($last_sent_cat_id);
         }
@@ -134,7 +135,7 @@ class Affilio_Main
 
         $max_post = reset($loop->posts);
         // affilio_log_me($loop->posts);
-        if($max_post->ID == $last_sent_product_id ){
+        if ($max_post->ID == $last_sent_product_id) {
             // return true;
             affilio_log_me($last_sent_product_id);
         }
@@ -293,7 +294,7 @@ class Affilio_Main
 
     function sync_new_product($productId)
     {
-        $product = wc_get_product($productId);
+        $product = get_post($productId);
         $body = [];
         $val = $this->get_post_object($product);
         array_push($body, $val);

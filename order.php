@@ -6,7 +6,6 @@ if ($AF_ID && !is_admin()) {
     add_action('woocommerce_order_status_cancelled', 'affilio_call_after_order_cancel');
     $bearer = get_option("affilio_token");
     define('AFFILIO_BEARER', $bearer);
-    
 }
 
 function affilio_call_after_new_customer_insert($user_id)

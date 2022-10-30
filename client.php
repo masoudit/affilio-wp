@@ -259,7 +259,7 @@ function affilio_sync_on_product_save($meta_id, $post_id, $meta_key, $meta_value
 	if ($meta_key == '_edit_lock') { // we've been editing the post
 		if (get_post_type($post_id) == 'product') { // we've been editing a product
 			$affilio = new Affilio_Main();
-			$affilio->sync_new_product('product');
+			$affilio->sync_new_product($post_id);
 			// $product = wc_get_product( $post_id );
 			// affilio_log_me($post_id);
 		}
