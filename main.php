@@ -248,7 +248,7 @@ class Affilio_Main
             'title' => $product->get_name(),
             'web_store_id' => AFFILIO_WEB_STORE_ID,
             'category_id' => $cat,
-            'landing' => "",
+            'landing' => $product->get_permalink(),
             'description' => $product->get_description(),
             'image' => is_array($image) ? reset($image) : null,
             'alt_image' => "",
@@ -261,7 +261,7 @@ class Affilio_Main
             'product_score' => "",
             'price_tag' => $product->get_tag_ids(),
         );
-        // affilio_log_me($val);
+        affilio_log_me($val);
         return $val;
     }
 

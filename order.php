@@ -10,12 +10,13 @@ if ($AF_ID && !is_admin()) {
 
 function affilio_call_after_new_customer_insert($user_id)
 {
+    $AF_ID = isset($_COOKIE['AFF_ID']) && sanitize_text_field($_COOKIE['AFF_ID']);
     $options = get_option('affilio_option_name');
     $webstore = $options['webstore'];
     $body = array(array(
         "user_id" => $user_id,
         "web_store_code" => $webstore,
-        "affiliate_id" => $_COOKIE['AFF_ID']
+        "affiliate_id" => $AF_ID
     ));
 
     $params = array(
@@ -37,6 +38,7 @@ function affilio_call_after_new_customer_insert($user_id)
 
 function affilio_call_after_order_update($id, $pre, $next)
 {
+    $AF_ID = isset($_COOKIE['AFF_ID']) && sanitize_text_field($_COOKIE['AFF_ID']);
     $args = array(
         'post_type' => 'shop_order',
         //    'posts_per_page' => '-1'
@@ -60,7 +62,7 @@ function affilio_call_after_order_update($id, $pre, $next)
             'basket_id' => $order->order_key,
             'order_id' => $order->id,
             'web_store_id' => $webstore,
-            'affiliate_id' => $_COOKIE['AFF_ID'],
+            'affiliate_id' => $AF_ID,
             'is_new_customer' => '',
             // 'order_status' => $order->status,
             'order_status' => afiilio_get_order_status($order->status),
