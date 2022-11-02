@@ -1,6 +1,5 @@
 <?php 
-// $BASE_API = "https://blackhole.affilio.ir/api/v1";
-$BASE_API = "https://blackhole-stage.affilio.ir/api/v1";
+$BASE_API = "https://blackhole.affilio.ir/api/v1";
 if(!defined('AFFILIO_BASE_API'))
     define( 'AFFILIO_BASE_API', $BASE_API );
 
