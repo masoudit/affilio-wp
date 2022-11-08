@@ -63,7 +63,7 @@ class Affilio_Main
         }
     }
 
-    function init_categories()
+    function init_categories($is_quick = false)
     {
         $afi_sent_cats_name = 'afi_sent_cats';
         $last_sent_cat_id = get_option($afi_sent_cats_name);
@@ -77,14 +77,17 @@ class Affilio_Main
         );
         $max_cat = reset($categories);
         if ($max_cat->term_id == $last_sent_cat_id) {
-            // return true;
             affilio_log_me($last_sent_cat_id);
+            // return true;
         }
 
         $body = [];
         foreach ($categories as $cat) {
-            $val = $this->get_category_object($cat);
-            array_push($body, $val);
+            if(!$is_quick || $cat->term_id > $last_sent_cat_id){
+                // affilio_log_me($cat->term_id);
+                $val = $this->get_category_object($cat);
+                array_push($body, $val);
+            }
         }
 
         $params = array(
@@ -114,7 +117,7 @@ class Affilio_Main
         }
     }
 
-    function init_products()
+    function init_products($is_quick = false)
     {
         // echo 'init_products Fired on the WordPress initialization';
         $afi_sent_products = 'afi_sent_products';
@@ -123,14 +126,17 @@ class Affilio_Main
         $args = array(
             'post_type'      => 'product',
             'posts_per_page'   => -1,
-            // 'product_cat'    => 'hoodies'
         );
 
         $loop = new WP_Query($args);
         $body = [];
+
         foreach ($loop->posts as $post) :
-            $val = $this->get_post_object($post);
-            array_push($body, $val);
+            if(!$is_quick || $post->ID > $last_sent_product_id){
+                affilio_log_me($post->ID);
+                $val = $this->get_post_object($post);
+                array_push($body, $val);
+            }
         endforeach;
 
         $max_post = reset($loop->posts);
@@ -139,7 +145,6 @@ class Affilio_Main
             // return true;
             affilio_log_me($last_sent_product_id);
         }
-        affilio_log_me($max_post->ID);
 
         $params = array(
             'body'    => json_encode($body),
@@ -261,7 +266,7 @@ class Affilio_Main
             'product_score' => "",
             'price_tag' => $product->get_tag_ids(),
         );
-        affilio_log_me($val);
+        // affilio_log_me($val);
         return $val;
     }
 

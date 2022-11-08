@@ -26,7 +26,7 @@ class AFFILIO
 	}
 
 	// $type: product | category
-	public function syncMethod($type = null)
+	public function syncMethod($type = null, $quick = false)
 	{
 		$main = new Affilio_Main();
 		$affilio_options = get_option('affilio_option_name');
@@ -37,16 +37,16 @@ class AFFILIO
 			// var_dump($GLOBALS['bearer']);
 			// echo "Sync_Loading";
 			if ($type === "category") {
-				$result = $main->init_categories();
+				$result = $main->init_categories($quick);
 				return;
 			}
 			if ($type === "products") {
-				$resultP = $main->init_products();
+				$resultP = $main->init_products($quick);
 				return;
 			}
-			$result = $main->init_categories();
+			$result = $main->init_categories($quick);
 			if ($result === true) {
-				$resultP = $main->init_products();
+				$resultP = $main->init_products($quick);
 				if ($resultP === true) {
 					// $msg = '<div id="message" class="updated notice is-dismissible"><p>همگام سازی با موفقیت انجام شد</p></div>';
 					// echo $msg;
@@ -88,7 +88,7 @@ class AFFILIO
 
 	function sync_quick()
 	{
-		$this->syncMethod();
+		$this->syncMethod(null, true);
 	}
 	function sync_all()
 	{
@@ -126,32 +126,34 @@ class AFFILIO
 						</form>
 					</td>
 					<td>
-						<h2>همگام سازی داده ها</h2>
-						<form method="post">
-							<?php if ($isConnected) : ?>
-								<div>
-									<h3>همگام سازی سریع</h3>
-									<p>در صورتی که قبلا فرایند همگام سازی دادها با پنل افیلو را انجام داده اید و اطلاعات شما
-										در پنل افیلیو
-										<b>ناقص است</b>
-										بر روی دکمه زیر کلیک نمایید:
-									</p>
-									<button name="sync_quick">همگام سازی اطلاعات</button>
-								</div>
+						<?php if ($isConnected) : ?>
+							<div>
+								<h2>همگام سازی داده ها</h2>
+								<form method="post">
+									<?php if ($username) : ?>
+										<div>
+											<h3>همگام سازی سریع</h3>
+											<p>در صورتی که قبلا فرایند همگام سازی دادها با پنل افیلو را انجام داده اید و اطلاعات شما
+												در پنل افیلیو
+												<b>ناقص است</b>
+												بر روی دکمه زیر کلیک نمایید:
+											</p>
+											<button name="sync_quick">همگام سازی اطلاعات</button>
+										</div>
+									<?php endif; ?>
+
+									<div>
+										<h3>همگام سازی کامل</h3>
+										<p>
+											جهت همگام سازی داده های موجود در سایت، با پنل افیلیو لطفا بر روی
+											دکمه زیر کلیک نمایید.
+											<br />
+											توجه داشته باشید، این فرایند بسته به محصولات، دسته بندی ها و سفارشات شما میتواند کمی زمان بر باشد.
+										</p>
+										<button name="sync_all">همگام سازی اطلاعات</button>
+									</div>
+								</form>
 							<?php endif; ?>
-							<?php if ($username) : ?>
-								<div>
-									<h3>همگام سازی کامل</h3>
-									<p>
-										جهت همگام سازی داده های موجود در سایت، با پنل افیلیو لطفا بر روی
-										دکمه زیر کلیک نمایید.
-										<br />
-										توجه داشته باشید، این فرایند بسته به محصولات، دسته بندی ها و سفارشات شما میتواند کمی زمان بر باشد.
-									</p>
-									<button name="sync_all">همگام سازی اطلاعات</button>
-								</div>
-						</form>
-					<?php endif; ?>
 					</td>
 				</tr>
 			</table>

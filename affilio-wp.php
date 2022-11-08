@@ -14,9 +14,9 @@ if (!defined('ABSPATH')) {
 require __DIR__ . '/utils.php';
 require __DIR__ . '/config.php';
 // Check if WooCommerce is active
-if ( !affilio_is_plugin_active( 'woocommerce.php' ) ) {
-    affilio_admin_notice('error', 'جهت نصب افزونه افیلیو، پلاگین ووکامرس با حداقل ورژن '. AFFILIO_MIN_WOOCOMMERCE_VERSION .' باید نصب شده باشد!');
-	return;
+if (!affilio_is_plugin_active('woocommerce.php')) {
+    affilio_admin_notice('error', 'جهت نصب افزونه افیلیو، پلاگین ووکامرس با حداقل ورژن ' . AFFILIO_MIN_WOOCOMMERCE_VERSION . ' باید نصب شده باشد!');
+    return;
 }
 
 require __DIR__ . '/client.php';
@@ -74,4 +74,3 @@ if (is_admin()) {
     // add_action('wp_head', 'add_script_style');
     affilio_add_script_style();
 }
-
