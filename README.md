@@ -1,12 +1,12 @@
 # AFFILIO WP INTEGRAION
 ## Affilio Integration WordPress/Woocommerce Plugin
 
-Affilio is an Affiliate marketing solution to promote and sell products, paying them a commission every time they sell something. Affilio-Wp-Integraion Plugin is designed for WordPress Woocommerce e-commerce.
+Affilio has been cooperating with Digikala for the past years, and now it is available for other merchants to use its services. Our platform offers the advantage of optimizing advertising costs. With over 1500 qualified publishers, Affilio boasts the largest affiliate network in Iran.
 
 ## Features
 
-- Auto-sync your products, categories, orders, and users by the Afiilio PLatform
-- Handling all needed oprations of the Affilio platform
+- Auto-sync your products, categories, orders, and users by the Affilio PLatform
+- Handling all needed operations of the Affilio platform
 
 ## Installation
 

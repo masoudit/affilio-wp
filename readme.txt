@@ -3,18 +3,16 @@ Contributors: masoudit
 Tags: Marketing, Affiliate
 Requires at least: 4.7
 Tested up to: 6.0
-Stable tag: 1.0.0
+Stable tag: 1.2.0
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-The quick way to integrate with Affiliate platform.
+The quick way to integrate with Affilio platform.
 
 == Description ==
 
-The quick way to integrate with Affiliate platform. Auto integrate products, categories and orders with Affilio Platform.
-
-Major features in Affiliate include:
+The quick way to integrate with Affilio platform. Auto integrate products, categories and orders with Affilio Platform.
 
 == Installation ==
 
