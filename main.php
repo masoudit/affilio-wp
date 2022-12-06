@@ -28,7 +28,6 @@ class Affilio_Main
             ),
         );
 
-        affilio_log_me(affilio_get_url(AFFILIO_AUTH_LOGIN));
         try {
             $response = wp_safe_remote_post(affilio_get_url(AFFILIO_AUTH_LOGIN), $params);
             $hasError = null;
@@ -265,7 +264,6 @@ class Affilio_Main
             'product_score' => "",
             'price_tag' => $product->get_tag_ids(),
         );
-        affilio_log_me($val);
         return $val;
     }
 

@@ -1,5 +1,8 @@
 <?php
 $AF_ID = isset($_COOKIE['AFF_ID']) ? sanitize_text_field($_COOKIE['AFF_ID']) : null;
+
+affilio_log_me(is_admin());
+
 if ($AF_ID && !is_admin()) {
     add_action('user_register', 'affilio_call_after_new_customer_insert');
     add_action('woocommerce_order_status_changed', 'affilio_call_after_order_update', 10, 3);
@@ -38,7 +41,8 @@ function affilio_call_after_new_customer_insert($user_id)
 
 function affilio_call_after_order_update($id, $pre, $next)
 {
-    $AF_ID = isset($_COOKIE['AFF_ID']) && sanitize_text_field($_COOKIE['AFF_ID']);
+    $AF_ID = isset($_COOKIE['AFF_ID']) ? sanitize_text_field($_COOKIE['AFF_ID']) : null;
+    $options = get_option('affilio_option_name');
     $args = array(
         'post_type' => 'shop_order',
         //    'posts_per_page' => '-1'
@@ -49,7 +53,7 @@ function affilio_call_after_order_update($id, $pre, $next)
     $orders = array($order_);
 
     $body = [];
-    foreach ($orders as $order) :
+    foreach ($orders as $order):
         $orderItems = [];
         foreach ($order->posts as $orderItem) :
             array_push($orderItems, $orderItem);
@@ -89,7 +93,7 @@ function affilio_call_after_order_update($id, $pre, $next)
         );
         array_push($body, $val);
     endforeach;
-
+    
     $params = array(
         'body'    => json_encode($body),
         // 'timeout' => 60,
@@ -98,7 +102,6 @@ function affilio_call_after_order_update($id, $pre, $next)
             'Authorization' => 'Bearer ' . AFFILIO_BEARER,
         ),
     );
-
 
     if ($pre === 'pending' && $next === 'processing') {
         $response = wp_safe_remote_post(affilio_get_url(AFFILIO_SYNC_ORDER_API), $params);
@@ -144,7 +147,7 @@ function affilio_call_after_order_update($id, $pre, $next)
 function affilio_call_after_order_cancel($order_id)
 {
     affilio_log_me('This is a message for debugging purposes');
-    affilio_log_me(array("This is a message" => 'xx', 'orderId' => $order_id));
+    // affilio_log_me(array("This is a message" => 'xx', 'orderId' => $order_id));
 
     $body = array(array(
         "order_id" => $order_id,
