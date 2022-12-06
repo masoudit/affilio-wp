@@ -1,5 +1,5 @@
 <?php
-$AF_ID = isset($_COOKIE['AFF_ID']) && sanitize_text_field($_COOKIE['AFF_ID']);
+$AF_ID = isset($_COOKIE['AFF_ID']) ? sanitize_text_field($_COOKIE['AFF_ID']) : null;
 if ($AF_ID && !is_admin()) {
     add_action('user_register', 'affilio_call_after_new_customer_insert');
     add_action('woocommerce_order_status_changed', 'affilio_call_after_order_update', 10, 3);
@@ -10,7 +10,7 @@ if ($AF_ID && !is_admin()) {
 
 function affilio_call_after_new_customer_insert($user_id)
 {
-    $AF_ID = isset($_COOKIE['AFF_ID']) && sanitize_text_field($_COOKIE['AFF_ID']);
+    $AF_ID = isset($_COOKIE['AFF_ID']) ? sanitize_text_field($_COOKIE['AFF_ID']) : null;
     $options = get_option('affilio_option_name');
     $webstore = $options['webstore'];
     $body = array(array(
@@ -27,7 +27,7 @@ function affilio_call_after_new_customer_insert($user_id)
             'Authorization' => 'Bearer ' . AFFILIO_BEARER,
         ),
     );
-    $response = wp_safe_remote_post(esc_url_raw(AFFILIO_SYNC_NEW_CUSTOMER_API), $params);
+    $response = wp_safe_remote_post(affilio_get_url(AFFILIO_SYNC_NEW_CUSTOMER_API), $params);
     // affilio_log_me($response);
     if (is_wp_error($response)) {
         return $response;
@@ -101,7 +101,7 @@ function affilio_call_after_order_update($id, $pre, $next)
 
 
     if ($pre === 'pending' && $next === 'processing') {
-        $response = wp_safe_remote_post(esc_url_raw(AFFILIO_SYNC_ORDER_API), $params);
+        $response = wp_safe_remote_post(affilio_get_url(AFFILIO_SYNC_ORDER_API), $params);
         $isSuccess = json_decode($response['body'])->success;
         // affilio_log_me($isSuccess);
         if ($isSuccess) {
@@ -115,7 +115,7 @@ function affilio_call_after_order_update($id, $pre, $next)
         }
     }
     if ($next === 'canceled') {
-        $response = wp_safe_remote_post(esc_url_raw(AFFILIO_SYNC_ORDER_CANCEL_API), $params);
+        $response = wp_safe_remote_post(affilio_get_url(AFFILIO_SYNC_ORDER_CANCEL_API), $params);
         $isSuccess = json_decode($response['body'])->success;
         // affilio_log_me($isSuccess);
         if ($isSuccess) {
@@ -129,7 +129,7 @@ function affilio_call_after_order_update($id, $pre, $next)
         }
     }
     if ($next) {
-        $response = wp_safe_remote_post(esc_url_raw(AFFILIO_SYNC_ORDER_UPDATE_API), $params);
+        $response = wp_safe_remote_post(affilio_get_url(AFFILIO_SYNC_ORDER_UPDATE_API), $params);
         $isSuccess = json_decode($response['body'])->success;
         // affilio_log_me($isSuccess);
 
@@ -160,7 +160,7 @@ function affilio_call_after_order_cancel($order_id)
             'Authorization' => 'Bearer ' . AFFILIO_BEARER,
         ),
     );
-    $response = wp_safe_remote_post(esc_url_raw(AFFILIO_SYNC_ORDER_CANCEL_API), $params);
+    $response = wp_safe_remote_post(affilio_get_url(AFFILIO_SYNC_ORDER_CANCEL_API), $params);
 
     if (is_wp_error($response)) {
         return $response;

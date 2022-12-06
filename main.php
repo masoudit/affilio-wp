@@ -8,6 +8,7 @@ class Affilio_Main
         if (!defined('AFFILIO_WEB_STORE_ID')) {
             define('AFFILIO_WEB_STORE_ID', $webId);
             $GLOBALS['bearer'] = get_option('affilio_token');
+            $GLOBALS['affilio_is_stage'] = $affilio_options["is_stage"] === "is_stage" ? "is_stage" : null;
         }
     }
 
@@ -26,13 +27,16 @@ class Affilio_Main
                 'Content-Type' => 'application/json;charset=' . get_bloginfo('charset'),
             ),
         );
+
+        affilio_log_me(affilio_get_url(AFFILIO_AUTH_LOGIN));
         try {
-            $response = wp_safe_remote_post(esc_url_raw(AFFILIO_AUTH_LOGIN), $params);
+            $response = wp_safe_remote_post(affilio_get_url(AFFILIO_AUTH_LOGIN), $params);
             $hasError = null;
             if (!is_wp_error($response)) {
                 $result = wp_remote_retrieve_body($response);
                 $result = json_decode($result)->data;
                 $hasError = isset($result->errors);
+
                 if (!$hasError) {
                     if (strlen($result) > 150) {
                         $GLOBALS['bearer'] = $result;
@@ -46,19 +50,14 @@ class Affilio_Main
                     }
                 }
             }
+
             if ($hasError && is_string($hasError)) {
-                // $msg = '<div id="message" class="error notice is-dismissible"><p>' . $result . '</p></div>';
-                // echo ($msg);
                 affilio_admin_notice('error', $result);
                 return;
             } else {
-                // $msg = '<div id="message" class="error notice is-dismissible"><p>اطلاعات نامعتبر است</p></div>';
-                // echo ($msg);
                 affilio_admin_notice('error', 'اطلاعات نامعتبر است');
             }
         } catch (Exception $e) {
-            // $msg = '<div id="message" class="error notice is-dismissible"><p>اطلاعات نامعتبر است</p></div>';
-            // echo ($msg);
             affilio_admin_notice('error', 'اطلاعات نامعتبر است');
         }
     }
@@ -77,7 +76,7 @@ class Affilio_Main
         );
         $max_cat = reset($categories);
         if ($max_cat->term_id == $last_sent_cat_id) {
-            affilio_log_me($last_sent_cat_id);
+            // affilio_log_me($last_sent_cat_id);
             // return true;
         }
 
@@ -99,7 +98,7 @@ class Affilio_Main
             ),
         );
 
-        $response = wp_safe_remote_post(esc_url_raw(AFFILIO_SYNC_CATEGORY_API), $params);
+        $response = wp_safe_remote_post(affilio_get_url(AFFILIO_SYNC_CATEGORY_API), $params);
 
         if (is_wp_error($response)) {
             $msg = '<div id="message" class="error notice is-dismissible"><p>خطای همگام سازی دسته بندی ها، لطفا مجددا تلاشی نمایید</p></div>';
@@ -133,7 +132,7 @@ class Affilio_Main
 
         foreach ($loop->posts as $post) :
             if(!$is_quick || $post->ID > $last_sent_product_id){
-                affilio_log_me($post->ID);
+                // affilio_log_me($post->ID);
                 $val = $this->get_post_object($post);
                 array_push($body, $val);
             }
@@ -143,7 +142,7 @@ class Affilio_Main
         // affilio_log_me($loop->posts);
         if ($max_post->ID == $last_sent_product_id) {
             // return true;
-            affilio_log_me($last_sent_product_id);
+            // affilio_log_me($last_sent_product_id);
         }
 
         $params = array(
@@ -154,7 +153,7 @@ class Affilio_Main
                 'Authorization' => 'Bearer ' . $GLOBALS['bearer'],
             ),
         );
-        $response = wp_safe_remote_post(esc_url_raw(AFFILIO_SYNC_PRODUCT_API), $params);
+        $response = wp_safe_remote_post(affilio_get_url(AFFILIO_SYNC_PRODUCT_API), $params);
         if (is_wp_error($response)) {
             $msg = '<div id="message" class="error notice is-dismissible"><p>خطای همگام سازی محصولات، لطفا مجددا تلاش نمایید</p></div>';
             echo esc_html($msg);
@@ -233,7 +232,7 @@ class Affilio_Main
                 'Authorization' => 'Bearer ' . $GLOBALS['bearer'],
             ),
         );
-        $response = wp_safe_remote_post(esc_url_raw(AFFILIO_SYNC_ORDER_API), $params);
+        $response = wp_safe_remote_post(affilio_get_url(AFFILIO_SYNC_ORDER_API), $params);
         if (is_wp_error($response)) {
             return $response;
         } elseif (empty($response['body'])) {
@@ -266,7 +265,7 @@ class Affilio_Main
             'product_score' => "",
             'price_tag' => $product->get_tag_ids(),
         );
-        // affilio_log_me($val);
+        affilio_log_me($val);
         return $val;
     }
 
@@ -277,7 +276,7 @@ class Affilio_Main
                 'web_store_id' => AFFILIO_WEB_STORE_ID,
                 'title' => $cat->name,
                 'category_id' => $cat->term_id,
-                'parent_category_id' => $cat->parent,
+                'parent_category_id' => $cat->parent ? $cat->parent : null,
                 'is_active' => true,
                 'is_deleted' => false,
             );
@@ -288,7 +287,7 @@ class Affilio_Main
                 'web_store_id' => AFFILIO_WEB_STORE_ID,
                 'title' => $cat->cat_name,
                 'category_id' => $cat->cat_ID,
-                'parent_category_id' => $cat->category_parent,
+                'parent_category_id' => $cat->category_parent ? $cat->category_parent : null,
                 'is_active' => true,
                 'is_deleted' => false,
             );
@@ -312,7 +311,7 @@ class Affilio_Main
                 'Authorization' => 'Bearer ' . $GLOBALS['bearer'],
             ),
         );
-        $response = wp_safe_remote_post(esc_url_raw(AFFILIO_SYNC_PRODUCT_API), $params);
+        $response = wp_safe_remote_post(affilio_get_url(AFFILIO_SYNC_PRODUCT_API), $params);
         if (is_wp_error($response)) {
             $msg = '<div id="message" class="error notice is-dismissible"><p>خطای همگام سازی محصولات، لطفا مجددا تلاش نمایید</p></div>';
             echo esc_html($msg);
@@ -344,7 +343,7 @@ class Affilio_Main
             ),
         );
 
-        $response = wp_safe_remote_post(esc_url_raw(AFFILIO_SYNC_CATEGORY_API), $params);
+        $response = wp_safe_remote_post(affilio_get_url(AFFILIO_SYNC_CATEGORY_API), $params);
 
         if (is_wp_error($response)) {
             $msg = '<div id="message" class="error notice is-dismissible"><p>خطای همگام سازی دسته بندی ها، لطفا مجددا تلاشی نمایید</p></div>';

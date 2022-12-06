@@ -35,16 +35,15 @@ if (!defined('AFFILIO_LAST_ORDER')) {
 
 function affilio_init_set_cookie()
 {
-    $utm_source = isset($_GET['utm_source']) && sanitize_text_field(['utm_source']);
-    $utm_medium = isset($_GET['utm_medium']) && sanitize_text_field($_GET['utm_medium']);
-    $utm_campaign = isset($_GET['utm_campaign']) && sanitize_text_field($_GET['utm_campaign']);
-    $utm_content = isset($_GET['utm_content']) && sanitize_text_field($_GET['utm_content']);
-    $aff_id = isset($_GET['affid']) && sanitize_text_field($_GET['affid']);
-    $exp = isset($_GET['exp']) && sanitize_text_field($_GET['exp']);
-    // echo $ppc;
+    $utm_source = isset($_GET['utm_source']) ? sanitize_text_field($_GET['utm_source']) : null;
+    $utm_medium = isset($_GET['utm_medium']) ? sanitize_text_field($_GET['utm_medium']) : null;
+    $utm_campaign = isset($_GET['utm_campaign']) ? sanitize_text_field($_GET['utm_campaign']) : null;
+    $utm_content = isset($_GET['utm_content']) ? sanitize_text_field($_GET['utm_content']) : null;
+    $aff_id = isset($_GET['affid']) ? sanitize_text_field($_GET['affid']) : null;
+    $exp = isset($_GET['exp']) ? sanitize_text_field($_GET['exp']) : null;
     if (
         $utm_source &&
-        $utm_medium && $utm_medium === "affilio" &&
+        $utm_medium && strtolower($utm_medium) === "affilio" &&
         $utm_campaign &&
         $utm_content &&
         $aff_id &&

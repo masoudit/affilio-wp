@@ -83,3 +83,7 @@ function affilio_is_plugin_active( $plugin_name ) {
 
     return in_array( $plugin_name, $plugin_filenames );
 }
+
+function affilio_get_url($url){
+   return $GLOBALS['affilio_is_stage'] ? esc_url_raw(AFFILIO_BASE_STAGE_API . $url) : esc_url_raw(AFFILIO_BASE_API . $url);
+}

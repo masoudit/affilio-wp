@@ -198,6 +198,14 @@ class AFFILIO
 			'affilio-admin', // page
 			'affilio_setting_section' // section
 		);
+
+		add_settings_field(
+			'is_stage', // id
+			'فعال سازی محیط آزمایشی', // title
+			array($this, 'stage_test_callback'), // callback
+			'affilio-admin', // page
+			'affilio_setting_section' // section
+		);
 	}
 
 	public function affilio_sanitize($input)
@@ -215,6 +223,9 @@ class AFFILIO
 			$sanitary_values['webstore'] = sanitize_text_field($input['webstore']);
 		}
 
+		if (isset( $input['is_stage']) ) {
+			$sanitary_values['is_stage'] = $input['is_stage'];
+		}
 
 		return $sanitary_values;
 	}
@@ -250,6 +261,13 @@ class AFFILIO
 		printf(
 			'<input class="regular-text" type="text" name="affilio_option_name[webstore]" id="webstore" value="%s">',
 			isset($this->affilio_options['webstore']) ? esc_attr($this->affilio_options['webstore']) : ''
+		);
+	}
+
+	public function stage_test_callback() {
+		printf(
+			'<input type="checkbox" name="affilio_option_name[is_stage]" id="is_stage" value="is_stage" %s> <label for="is_stage"></label>',
+			( isset( $this->affilio_options['is_stage'] ) && $this->affilio_options['is_stage'] === 'is_stage' ) ? 'checked' : ''
 		);
 	}
 
