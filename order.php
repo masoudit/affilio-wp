@@ -1,8 +1,6 @@
 <?php
 $AF_ID = isset($_COOKIE['AFF_ID']) ? sanitize_text_field($_COOKIE['AFF_ID']) : null;
 
-affilio_log_me(is_admin());
-
 if ($AF_ID && !is_admin()) {
     add_action('user_register', 'affilio_call_after_new_customer_insert');
     add_action('woocommerce_order_status_changed', 'affilio_call_after_order_update', 10, 3);
