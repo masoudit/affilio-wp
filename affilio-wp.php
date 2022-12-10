@@ -4,7 +4,7 @@
  * Plugin Name: Affilio Integration
  * Plugin URI: https://www.Affilio.ir/
  * Description: Affilio Integration Wordpress/Woocommerce PLugin.
- * Version: 1.7.3
+ * Version: 1.7.4
  * Author: Masoud
  * Author URI: https://github.com/masoudit
  **/

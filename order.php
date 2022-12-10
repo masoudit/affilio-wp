@@ -8,6 +8,9 @@ if ($AF_ID && !is_admin()) {
     $bearer = get_option("affilio_token");
     define('AFFILIO_BEARER', $bearer);
 }
+if(is_admin()){
+    add_action('woocommerce_order_status_changed', 'affilio_call_after_order_update_admin', 10, 3);
+}
 
 function affilio_call_after_new_customer_insert($user_id)
 {
@@ -37,17 +40,104 @@ function affilio_call_after_new_customer_insert($user_id)
     }
 }
 
+function affilio_call_after_order_update_admin($id, $pre, $next)
+{
+    $order_ = wc_get_order(
+        $id
+    );
+    $affId = wc_get_order_item_meta($id, '_aff_id');
+    affilio_log_me($affId);
+
+    if($next === "completed"){
+        // set status admin approved
+        $body = [];
+        // $order_ = wc_get_order($id);
+        $orders = array($order_);
+
+        foreach ($orders as $order):
+            $orderItems = [];
+            foreach ($order->posts as $orderItem) :
+                array_push($orderItems, $orderItem);
+            endforeach;
+
+            $options = get_option('affilio_option_name');
+            $webstore = $options['webstore'];
+
+            $val = array(
+                'basket_id' => $order->order_key,
+                'order_id' => $order->id,
+                'web_store_id' => $webstore,
+                'affiliate_id' => $affId,
+                'is_new_customer' => '',
+                // 'order_status' => $order->status,
+                'order_status' => afiilio_get_order_status($order->status),
+                'shipping_cost' => $order->shipping_total,
+                'discount' => $order->discount_total,
+                'order_amount' => $order->total,
+                'source' => '',
+                'created_at' => afiilio_get_time($order_->date_created), //"2022-10-12 07:40:41.000000",
+                'close_source' => '',
+                'state' => $order->billing->city,
+                'city' => $order->billing->city,
+                'user_id' => $order->customer_id,
+                'voucher_code' => '',
+                'voucher_type' => '',
+                'voucher_price' => $order->discount_total,
+                'vat_price' => $order->total_tax,
+                'voucher_percent' => '',
+                // 'update_date' => $order->date_modified->date,
+                'update_date' => afiilio_get_time($order_->date_modified), //"2022-10-12 07:40:41.000000",
+                // 'delivery_date' => $order->date_completed->date,
+                'delivery_date' => $order_->date_completed ? afiilio_get_time($order_->date_completed) : "", //"2022-10-12 07:40:41.000000",
+                'voucher_used_amount' => '',
+                'order_items' => $orderItems
+            );
+            array_push($body, $val);
+        endforeach;
+    
+        $params = array(
+            'body'    => json_encode($body),
+            // 'timeout' => 60,
+            'headers' => array(
+                'Content-Type' => 'application/json;charset=' . get_bloginfo('charset'),
+                'Authorization' => 'Bearer ' . AFFILIO_BEARER,
+            ),
+        );
+
+        $response = wp_safe_remote_post(affilio_get_url(AFFILIO_SYNC_ORDER_UPDATE_API), $params);
+        $isSuccess = json_decode($response['body'])->success;
+        // affilio_log_me($isSuccess);
+        affilio_log_me($response);
+
+        if (is_wp_error($response)) {
+            return $response;
+        } elseif (empty($response['body'])) {
+            return new WP_Error('AFFILIO-api', 'Empty Response');
+        }
+    }
+}
+
 function affilio_call_after_order_update($id, $pre, $next)
 {
     $AF_ID = isset($_COOKIE['AFF_ID']) ? sanitize_text_field($_COOKIE['AFF_ID']) : null;
+    if(isset($AF_ID)){
+        // $respUpdate = wc_update_order_item_meta( $id, '_aff_id', $AF_ID );
+        $isExist = wc_get_order_item_meta( $id, '_aff_id' );
+        if(!$isExist){
+            wc_add_order_item_meta( $id, '_aff_id', $AF_ID );
+        }
+        // if(!isset(wc_get_order_id_by_order_item_id($id))){
+        // }
+    } else {
+        return;
+    }
+
     $options = get_option('affilio_option_name');
     $args = array(
         'post_type' => 'shop_order',
         //    'posts_per_page' => '-1'
     );
-    $order_ = wc_get_order(
-        $id
-    );
+    $order_ = wc_get_order($id);
     $orders = array($order_);
 
     $body = [];
@@ -211,6 +301,9 @@ function afiilio_get_order_status($status)
 
     switch ($status) {
         case 'completed':
+            $rtn = $affilio_order_status["MerchantApproved"];
+            break;
+        case 'delivered':
             $rtn = $affilio_order_status["Finalize"];
             break;
         case 'pending':
