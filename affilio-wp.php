@@ -4,7 +4,7 @@
  * Plugin Name: Affilio Integration
  * Plugin URI: https://www.Affilio.ir/
  * Description: Affilio Integration Wordpress/Woocommerce PLugin.
- * Version: 1.7.4
+ * Version: 1.8.3
  * Author: Masoud
  * Author URI: https://github.com/masoudit
  **/
@@ -41,14 +41,15 @@ function affilio_init_set_cookie()
     $utm_content = isset($_GET['utm_content']) ? sanitize_text_field($_GET['utm_content']) : null;
     $aff_id = isset($_GET['affid']) ? sanitize_text_field($_GET['affid']) : null;
     $exp = isset($_GET['exp']) ? sanitize_text_field($_GET['exp']) : null;
-    
+
     if (
-        $utm_source &&
+        // $utm_source &&
         $utm_medium && strtolower($utm_medium) === "affilio" &&
-        $utm_campaign &&
+        // $utm_campaign &&
         $aff_id &&
         $exp
     ) {
+        affilio_log_me($utm_source);
         try {
             $expTime = time() + (86400 * $exp);
             setcookie("AFF_ID", $aff_id, $expTime, "/");

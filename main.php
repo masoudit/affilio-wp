@@ -152,6 +152,7 @@ class Affilio_Main
                 'Authorization' => 'Bearer ' . $GLOBALS['bearer'],
             ),
         );
+        affilio_log_me($params);
         $response = wp_safe_remote_post(affilio_get_url(AFFILIO_SYNC_PRODUCT_API), $params);
         if (is_wp_error($response)) {
             $msg = '<div id="message" class="error notice is-dismissible"><p>خطای همگام سازی محصولات، لطفا مجددا تلاش نمایید</p></div>';
@@ -246,6 +247,23 @@ class Affilio_Main
         $image = wp_get_attachment_image_src(get_post_thumbnail_id($post->ID), 'single-post-thumbnail');
         $cats = $product->get_category_ids();
         $cat = end($cats);
+
+        $currency = 1;
+        $currentCurrency = get_woocommerce_currency();
+        if($currentCurrency == "IRT"){
+            $currency = 2;
+        }
+
+        $status = true;
+        if($product->get_status() === 'publish'){
+            $status = false;
+        }
+        if($status && $product->get_stock_status() == "outofstock"){
+            $status = false;
+        }
+        // affilio_log_me($product->get_regular_price());
+        // affilio_log_me($product->get_price());
+
         $val = array(
             'id' => $product->get_id(),
             'title' => $product->get_name(),
@@ -258,8 +276,9 @@ class Affilio_Main
             'discount' => $product->get_price() ? $product->get_regular_price() - $product->get_price() : null,
             'price' => $product->get_regular_price(),
             'code' => $product->get_sku(),
-            'is_incredible' => "",
-            'is_promotion' => "",
+            'is_incredible' => false,
+            'is_promotion' => false,
+            // 'currency' => $currency,
             'is_available' => $product->get_status() === 'publish',
             'product_score' => "",
             'price_tag' => $product->get_tag_ids(),
@@ -269,23 +288,32 @@ class Affilio_Main
 
     private function get_category_object($cat)
     {
+        affilio_log_me($cat->category_parent === 0);
         if ($cat->term_id) {
+            $pId = null;
+            if(isset($cat->parent) && $cat->parent != 0){
+                $pId = $cat->parent;
+            }
             $val = array(
                 'web_store_id' => AFFILIO_WEB_STORE_ID,
                 'title' => $cat->name,
                 'category_id' => $cat->term_id,
-                'parent_category_id' => $cat->parent ? $cat->parent : null,
+                'parent_category_id' => $pId,
                 'is_active' => true,
                 'is_deleted' => false,
             );
 
             return $val;
         } else {
+            $pId = null;
+            if(isset($cat->category_parent) && $cat->category_parent != 0){
+                $pId = $cat->category_parent;
+            }
             $val = array(
                 'web_store_id' => AFFILIO_WEB_STORE_ID,
                 'title' => $cat->cat_name,
                 'category_id' => $cat->cat_ID,
-                'parent_category_id' => $cat->category_parent ? $cat->category_parent : null,
+                'parent_category_id' => $pId,
                 'is_active' => true,
                 'is_deleted' => false,
             );
@@ -327,6 +355,10 @@ class Affilio_Main
 
     function sync_new_category($catId)
     {
+        $this->init_categories(false);
+        return;
+        // Todo: fix after backend
+
         $cat = get_term($catId);
         $body = [];
         $val = $this->get_category_object($cat);

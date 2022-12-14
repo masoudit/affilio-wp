@@ -9,6 +9,8 @@ if ($AF_ID && !is_admin()) {
     define('AFFILIO_BEARER', $bearer);
 }
 if(is_admin()){
+    $bearer = get_option("affilio_token");
+    define('AFFILIO_BEARER', $bearer);
     add_action('woocommerce_order_status_changed', 'affilio_call_after_order_update_admin', 10, 3);
 }
 
@@ -46,9 +48,11 @@ function affilio_call_after_order_update_admin($id, $pre, $next)
         $id
     );
     $affId = wc_get_order_item_meta($id, '_aff_id');
-    affilio_log_me($affId);
 
-    if($next === "completed"){
+    $affilio_options = get_option('affilio_option_name');
+    $status_finalize = $affilio_options['status_finalize'];
+
+    if($next == "completed" || $next == $status_finalize){
         // set status admin approved
         $body = [];
         // $order_ = wc_get_order($id);
@@ -103,11 +107,11 @@ function affilio_call_after_order_update_admin($id, $pre, $next)
                 'Authorization' => 'Bearer ' . AFFILIO_BEARER,
             ),
         );
+        // affilio_log_me(json_encode($body));
 
-        $response = wp_safe_remote_post(affilio_get_url(AFFILIO_SYNC_ORDER_UPDATE_API), $params);
+        $response = wp_safe_remote_post(affilio_get_url(AFFILIO_SYNC_ORDER_API), $params);
         $isSuccess = json_decode($response['body'])->success;
         // affilio_log_me($isSuccess);
-        affilio_log_me($response);
 
         if (is_wp_error($response)) {
             return $response;
@@ -299,12 +303,25 @@ function afiilio_get_order_status($status)
         "Canceled" => 4,
     );
 
+    $affilio_options = get_option('affilio_option_name');
+    $status_finalize = $affilio_options['status_finalize'];
+
+    if($status_finalize == $status) {
+        $rtn = $affilio_order_status["Finalize"];
+        return $rtn;
+    }
+
     switch ($status) {
         case 'completed':
-            $rtn = $affilio_order_status["MerchantApproved"];
+            if($status_finalize != "completed") {
+                $rtn = $affilio_order_status["MerchantApproved"];
+            }else{
+                $rtn = $affilio_order_status["Finalize"];
+            }
             break;
         case 'delivered':
-            $rtn = $affilio_order_status["Finalize"];
+            // $rtn = $affilio_order_status["Finalize"];
+            $rtn = $affilio_order_status["MerchantApproved"];
             break;
         case 'pending':
         case 'on-hold':

@@ -200,6 +200,14 @@ class AFFILIO
 		);
 
 		add_settings_field(
+			'status_finalize', // id
+			'وضعیت نهایی سفارش', // title
+			array($this, 'status_finalize_callback'), // callback
+			'affilio-admin', // page
+			'affilio_setting_section' // section
+		);
+
+		add_settings_field(
 			'is_stage', // id
 			'فعال سازی محیط آزمایشی', // title
 			array($this, 'stage_test_callback'), // callback
@@ -221,6 +229,10 @@ class AFFILIO
 
 		if (isset($input['webstore'])) {
 			$sanitary_values['webstore'] = sanitize_text_field($input['webstore']);
+		}
+		
+		if (isset($input['status_finalize'])) {
+			$sanitary_values['status_finalize'] = sanitize_text_field($input['status_finalize']);
 		}
 
 		if (isset( $input['is_stage']) ) {
@@ -270,7 +282,13 @@ class AFFILIO
 			( isset( $this->affilio_options['is_stage'] ) && $this->affilio_options['is_stage'] === 'is_stage' ) ? 'checked' : ''
 		);
 	}
-
+	
+	public function status_finalize_callback() {
+		printf(
+			'<input class="regular-text" type="text" name="affilio_option_name[status_finalize]" id="status_finalize" value="%s">',
+			isset($this->affilio_options['status_finalize']) ? esc_attr($this->affilio_options['status_finalize']) : 'completed'
+		);
+	}
 	/* These need to go in your custom plugin (or existing plugin) */
 }
 

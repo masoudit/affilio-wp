@@ -3,7 +3,7 @@ Contributors: masoudit
 Tags: Marketing, Affiliate
 Requires at least: 4.7
 Tested up to: 6.0
-Stable tag: 1.7.4
+Stable tag: 1.8.3
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -21,6 +21,10 @@ Upload the Affiliate plugin to your blog, activate it, and then enter your Affil
 1, 2, 3: You're done!
 
 == Changelog ==
+
+= 1.6.0 =
+*Release Date - 11 Dec 2022*
+- Add custom status
 
 = 1.6.0 =
 *Release Date - 6 Dec 2022*
